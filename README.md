@@ -63,7 +63,7 @@ Our goal is to make easier for audiology students to find relevant externships f
 
 ## Deployment
 
-**Note: Deployment steps will be further enhanced in CSC191**
+**Note: To be rewritten**
 
 **Prerequisites**
 
@@ -72,7 +72,7 @@ Our goal is to make easier for audiology students to find relevant externships f
 - Install your preferred IDE (VSCode, Eclipse, etc.). _VSCode recommended for Installation steps_.
 - Clone project repository from Github
 
-**Getting Started**
+**Getting Started: Will rewrite soon**
 
 - Navigate to the main project repository on Github and retrieve the project HTTPS URL. This can be done by locating and clicking the green button labeled "Code". Copy the HTTPS URL to your clipboard.
 - Once having installed VSCode or your preferred IDE, open the application and open a Gitbash terminal.
@@ -114,9 +114,9 @@ Testing will be performed iteratively during development. Placeholder for the fo
 
 ## Tech Stack
 
-- **Front end**: React, JavaScript
-- **Back end**: Firebase
-- **APIs**: Firebase database / Firestore database, PyaPal
+- **Front end**: React, Redux, Tailwind, Next.js, MUI, HTML
+- **Back end**: Firebase, Firestore
+- **APIs**: Firebase database / Firestore database, PayPal
 
 ---
 
