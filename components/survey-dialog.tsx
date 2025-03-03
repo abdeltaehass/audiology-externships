@@ -4,6 +4,8 @@
 import { useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { db } from "@/lib/firebase/config";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -104,7 +106,7 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
     }
   };
 
-  const handleSubmit = () => {
+ /* const handleSubmit = () => {
     if (validatePage()) {
       console.log("Form submitted:", formData);
       setOpen(false);
@@ -112,13 +114,26 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
       setFormData({});
       setErrors({});
     }
-  };
+  };*/
+  
+const handleSubmit = async () => {
+  if (validatePage()) {
+    try {
+      await addDoc(collection(db, "reviews"), formData);
+
+      console.log("Form submitted and saved to Firebase:", formData)
+
+      setOpen(false);
+      setCurrentPage(0);
+      setFormData({});
+      setErrors({});
+    } catch (e) {
+      console.error("Error submitting form data:", e);
+    }
+  }
+};
 
   const renderQuestion = (question: any) => {
-    // if (!evaluateCondition(question.enableIf, formData)) {
-    //   return null;
-    // }
-
     switch (question.type) {
       case "text":
         return (

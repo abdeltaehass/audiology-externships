@@ -38,6 +38,12 @@ export function SiteHeader() {
             >
               Pricing
             </Link>
+            <Link
+              href="/faq"
+              className={buttonVariants({ variant: "ghost" })}
+            >
+              FAQ
+            </Link>
             <SurveyDialog />
           </div>
 
