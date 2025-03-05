@@ -36,7 +36,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 import { surveyService } from "@/service";
-import { SurveyQuestion, SurveyStep } from "@/types/models";
+import { SurveyQuestion, SurveyStep } from "@/types";
 
 export default function SurveyManagementPage() {
   const [isQuestionDialogOpen, setIsQuestionDialogOpen] = useState(false);

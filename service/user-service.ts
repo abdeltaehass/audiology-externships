@@ -1,6 +1,6 @@
 import { auth, db } from "@/lib/firebase";
 import { addDocument } from "@/lib/firebase/firestore";
-import { UserModel } from "@/types/models";
+import { UserModel } from "@/types";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -10,13 +10,14 @@ import {
 } from "firebase/auth";
 import {
   collection,
+  deleteDoc,
   getDocs,
   query,
   Timestamp,
   where,
 } from "firebase/firestore";
 
-const registerUser = async (email: string, password: string) => {
+export const registerUser = async (email: string, password: string) => {
   const userCredential = await createUserWithEmailAndPassword(
     auth,
     email,
@@ -37,7 +38,7 @@ const registerUser = async (email: string, password: string) => {
   return userCredential.user;
 };
 
-const loginUser = async (email: string, password: string) => {
+export const loginUser = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
@@ -51,15 +52,35 @@ const loginUser = async (email: string, password: string) => {
   }
 };
 
-const logoutUser = async () => {
+export const deleteUser = async () => {
+  try {
+    const user = auth.currentUser;
+    const uid = user?.uid;
+    if (user) {
+      await user.delete();
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("uid", "==", uid));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        await deleteDoc(userDoc.ref);
+      }
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw error;
+  }
+};
+
+export const logoutUser = async () => {
   await signOut(auth);
 };
 
-const onAuthStateChange = (callback: (user: User | null) => void) => {
+export const onAuthStateChange = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);
 };
 
-const getUserData = async (userId: string) => {
+export const getUserData = async (userId: string) => {
   const usersRef = collection(db, "users");
   const q = query(usersRef, where("uid", "==", userId));
   const querySnapshot = await getDocs(q);
@@ -71,12 +92,4 @@ const getUserData = async (userId: string) => {
   const userDoc = querySnapshot.docs[0];
 
   return userDoc.data() as UserModel;
-};
-
-export const userService = {
-  registerUser,
-  loginUser,
-  logoutUser,
-  onAuthStateChange,
-  getUserData,
 };

@@ -3,6 +3,14 @@
 import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
+  // Building2,
+  // Calendar,
+  // Clock,
+  // DollarSign,
+  // GraduationCap,
+  // MapPin,
+  // Stethoscope,
+  // Users,
   Check,
   Eye,
   RefreshCw,
@@ -34,7 +42,70 @@ import {
 } from "@/components/ui/table";
 import { surveyService } from "@/service";
 // import { SurveyResponse } from "@/types";
-import { ReviewModel } from "@/types/models";
+import { ReviewModel } from "@/types";
+
+// const mockSurveyResponses: SurveyResponse[] = [
+//   {
+//     section: "Basic Information",
+//     items: [
+//       {
+//         question: "Externship Site Name",
+//         answer: "Audiology Center of Excellence",
+//         icon: <Building2 className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Location",
+//         answer: "San Francisco, California",
+//         icon: <MapPin className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Duration",
+//         answer: "12 months",
+//         icon: <Calendar className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Compensation",
+//         answer: "$40,001 - $50,000",
+//         icon: <DollarSign className="h-4 w-4" />,
+//       },
+//     ],
+//   },
+//   {
+//     section: "Clinical Experience",
+//     items: [
+//       {
+//         question: "Patient Population",
+//         answer: ["Adults", "Pediatrics", "Geriatrics"],
+//         icon: <Users className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Clinical Focus Areas",
+//         answer: [
+//           "Diagnostic Audiology",
+//           "Hearing Aids",
+//           "Cochlear Implants",
+//           "Vestibular Testing",
+//         ],
+//         icon: <Stethoscope className="h-4 w-4" />,
+//       },
+//     ],
+//   },
+//   {
+//     section: "Educational Details",
+//     items: [
+//       {
+//         question: "Supervision Model",
+//         answer: "Direct supervision with gradual independence",
+//         icon: <GraduationCap className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Weekly Schedule",
+//         answer: "40 hours/week, Monday-Friday",
+//         icon: <Clock className="h-4 w-4" />,
+//       },
+//     ],
+//   },
+// ];
 
 export default function ExternshipReviewsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);

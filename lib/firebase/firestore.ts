@@ -9,7 +9,7 @@
 //   DocumentData,
 // } from "firebase/firestore";
 // import { db } from "./config";
-// import { UserModel } from "@/types/models";
+// import { UserModel } from "@/types";
 
 // export const getCollection = async (collectionName: string) => {
 //   const querySnapshot = await getDocs(collection(db, collectionName));

@@ -82,6 +82,17 @@ export function SiteHeader() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link
+                    href="/faq"
+                    className={buttonVariants({
+                      variant: "ghost",
+                      className: "w-full cursor-pointer",
+                    })}
+                  >
+                    FAQ
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <SurveyDialog buttonClassName="w-full" />
                 </DropdownMenuItem>
               </DropdownMenuContent>

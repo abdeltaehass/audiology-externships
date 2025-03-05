@@ -11,16 +11,16 @@ export function SearchInput() {
 
   const searchValue = useMemo(() => {
     if (typeof window === "undefined") return "";
-    return searchParams.get("search")?.toString() || "";
+    return searchParams.get("query")?.toString() || "";
   }, [searchParams]);
 
   const handleSearch = (term: string) => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(searchParams);
     if (term) {
-      params.set("search", term);
+      params.set("query", term);
     } else {
-      params.delete("search");
+      params.delete("query");
     }
 
     startTransition(() => {

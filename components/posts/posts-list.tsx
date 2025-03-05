@@ -5,132 +5,133 @@ import {
   Calendar,
   ChevronRight,
   DollarSign,
+  Loader,
   MapPin,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import useMediaQuery from "@/hooks/use-media-query";
 import { Button } from "../ui/button";
 import { PostDetails } from "./post-details";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { surveyService } from "@/service";
 
-type Post = {
-  id: string;
-  siteName: string;
-  location: string;
-  duration: string;
-  compensation: string;
-  type: string;
-  rating: number;
-};
+// type Post = {
+//   id: string;
+//   siteName: string;
+//   location: string;
+//   duration: string;
+//   compensation: string;
+//   type: string;
+//   rating: number;
+// };
 
-// This would come from your API
-const ITEMS_PER_PAGE = 8;
-const mockPosts: Post[] = [
-  {
-    id: "1",
-    siteName: "Audiology Center of Excellence",
-    location: "San Francisco, California",
-    duration: "12 months",
-    compensation: "$40,001 - $50,000",
-    type: "Hospital",
-    rating: 4.5,
-  },
-  {
-    id: "2",
-    siteName: "Hearing Health Institute",
-    location: "Boston, Massachusetts",
-    duration: "9 months",
-    compensation: "$30,001 - $40,000",
-    type: "Private Practice",
-    rating: 4.8,
-  },
-  {
-    id: "3",
-    siteName: "Children's Audiology Clinic",
-    location: "Seattle, Washington",
-    duration: "12 months",
-    compensation: "$45,001 - $55,000",
-    type: "Pediatric Center",
-    rating: 4.7,
-  },
-  {
-    id: "4",
-    siteName: "Hearing Aid Center",
-    location: "Los Angeles, California",
-    duration: "6 months",
-    compensation: "$20,001 - $30,000",
-    type: "Private Practice",
-    rating: 4.2,
-  },
-  {
-    id: "5",
-    siteName: "Hearing Solutions",
-    location: "Chicago, Illinois",
-    duration: "12 months",
-    compensation: "$45,001 - $55,000",
-    type: "Private Practice",
-    rating: 4.6,
-  },
-  {
-    id: "6",
-    siteName: "Audiology Associates",
-    location: "New York, New York",
-    duration: "9 months",
-    compensation: "$30,001 - $40,000",
-    type: "Hospital",
-    rating: 4.4,
-  },
-  {
-    id: "7",
-    siteName: "Hearing Center of Excellence",
-    location: "San Francisco, California",
-    duration: "12 months",
-    compensation: "$40,001 - $50,000",
-    type: "Hospital",
-    rating: 4.5,
-  },
-  {
-    id: "8",
-    siteName: "Hearing Health Institute",
-    location: "Boston, Massachusetts",
-    duration: "9 months",
-    compensation: "$30,001 - $40,000",
-    type: "Private Practice",
-    rating: 4.8,
-  },
-  {
-    id: "9",
-    siteName: "Children's Audiology Clinic",
-    location: "Seattle, Washington",
-    duration: "12 months",
-    compensation: "$45,001 - $55,000",
-    type: "Pediatric Center",
-    rating: 4.7,
-  },
-  {
-    id: "10",
-    siteName: "Hearing Aid Center",
-    location: "Los Angeles, California",
-    duration: "6 months",
-    compensation: "$20,001 - $30,000",
-    type: "Private Practice",
-    rating: 4.2,
-  },
-  {
-    id: "11",
-    siteName: "Hearing Solutions",
-    location: "Chicago, Illinois",
-    duration: "12 months",
-    compensation: "$45,001 - $55,000",
-    type: "Private Practice",
-    rating: 4.8,
-  },
-];
+const ITEMS_PER_PAGE = 10;
+// const mockPosts: Post[] = [
+//   {
+//     id: "1",
+//     siteName: "Audiology Center of Excellence",
+//     location: "San Francisco, California",
+//     duration: "12 months",
+//     compensation: "$40,001 - $50,000",
+//     type: "Hospital",
+//     rating: 4.5,
+//   },
+//   {
+//     id: "2",
+//     siteName: "Hearing Health Institute",
+//     location: "Boston, Massachusetts",
+//     duration: "9 months",
+//     compensation: "$30,001 - $40,000",
+//     type: "Private Practice",
+//     rating: 4.8,
+//   },
+//   {
+//     id: "3",
+//     siteName: "Children's Audiology Clinic",
+//     location: "Seattle, Washington",
+//     duration: "12 months",
+//     compensation: "$45,001 - $55,000",
+//     type: "Pediatric Center",
+//     rating: 4.7,
+//   },
+//   {
+//     id: "4",
+//     siteName: "Hearing Aid Center",
+//     location: "Los Angeles, California",
+//     duration: "6 months",
+//     compensation: "$20,001 - $30,000",
+//     type: "Private Practice",
+//     rating: 4.2,
+//   },
+//   {
+//     id: "5",
+//     siteName: "Hearing Solutions",
+//     location: "Chicago, Illinois",
+//     duration: "12 months",
+//     compensation: "$45,001 - $55,000",
+//     type: "Private Practice",
+//     rating: 4.6,
+//   },
+//   {
+//     id: "6",
+//     siteName: "Audiology Associates",
+//     location: "New York, New York",
+//     duration: "9 months",
+//     compensation: "$30,001 - $40,000",
+//     type: "Hospital",
+//     rating: 4.4,
+//   },
+//   {
+//     id: "7",
+//     siteName: "Hearing Center of Excellence",
+//     location: "San Francisco, California",
+//     duration: "12 months",
+//     compensation: "$40,001 - $50,000",
+//     type: "Hospital",
+//     rating: 4.5,
+//   },
+//   {
+//     id: "8",
+//     siteName: "Hearing Health Institute",
+//     location: "Boston, Massachusetts",
+//     duration: "9 months",
+//     compensation: "$30,001 - $40,000",
+//     type: "Private Practice",
+//     rating: 4.8,
+//   },
+//   {
+//     id: "9",
+//     siteName: "Children's Audiology Clinic",
+//     location: "Seattle, Washington",
+//     duration: "12 months",
+//     compensation: "$45,001 - $55,000",
+//     type: "Pediatric Center",
+//     rating: 4.7,
+//   },
+//   {
+//     id: "10",
+//     siteName: "Hearing Aid Center",
+//     location: "Los Angeles, California",
+//     duration: "6 months",
+//     compensation: "$20,001 - $30,000",
+//     type: "Private Practice",
+//     rating: 4.2,
+//   },
+//   {
+//     id: "11",
+//     siteName: "Hearing Solutions",
+//     location: "Chicago, Illinois",
+//     duration: "12 months",
+//     compensation: "$45,001 - $55,000",
+//     type: "Private Practice",
+//     rating: 4.8,
+//   },
+// ];
 
 export function PostsList() {
   const router = useRouter();
@@ -140,14 +141,21 @@ export function PostsList() {
     searchParams.get("post")
   );
   const page = Number(searchParams.get("page")) || 1;
-  const search = searchParams.get("search")?.toLowerCase() || "";
+  const searchQuery = searchParams.get("query")?.toLowerCase() || "";
 
-  const filteredPosts = mockPosts.filter(
-    (post) =>
-      post.siteName.toLowerCase().includes(search) ||
-      post.location.toLowerCase().includes(search) ||
-      post.duration.toLowerCase().includes(search)
-  );
+  const getReviewsQuery = useQuery({
+    queryKey: ["reviews", { status: "accepted" }],
+    queryFn: surveyService.getApprovedReviews,
+  });
+
+  const filteredPosts = getReviewsQuery.data?.length
+    ? getReviewsQuery.data.filter(
+        (post) =>
+          post.siteName.toLowerCase().includes(searchQuery) ||
+          post.location.toLowerCase().includes(searchQuery) ||
+          post.duration.toLowerCase().includes(searchQuery)
+      )
+    : [];
 
   const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
   const currentPosts = filteredPosts.slice(
@@ -162,9 +170,30 @@ export function PostsList() {
     router.push(`/posts?${params.toString()}`);
   };
 
+  if (getReviewsQuery.isLoading) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center space-y-4">
+        <div className="rounded-full bg-muted p-3">
+          <Building2 className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center">
+            <Loader className="mr-2 h-4 w-4 animate-spin" />
+            <p className="text-lg font-medium text-muted-foreground">
+              Loading...
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Please wait while we fetch the externships
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (filteredPosts.length === 0) {
     return (
-      <Card className="flex min-h-[400px] flex-col items-center justify-center space-y-4 border-dashed">
+      <Card className="flex h-full flex-col items-center justify-center space-y-4 bg-transparent border-0 shadow-none">
         <div className="rounded-full bg-muted p-3">
           <Building2 className="h-6 w-6 text-muted-foreground" />
         </div>
@@ -173,7 +202,7 @@ export function PostsList() {
             No externships found
           </p>
           <p className="text-sm text-muted-foreground">
-            Try adjusting your search terms
+            Try adjusting your search terms.
           </p>
         </div>
       </Card>
@@ -185,12 +214,12 @@ export function PostsList() {
       <div className="grid gap-4">
         {currentPosts.map((post) => (
           <Card
-            key={post.id}
+            key={post.docId}
             className={cn(
               "cursor-pointer transition-all hover:shadow-md",
-              selectedPost === post.id && "border-primary bg-primary/5"
+              selectedPost === post.docId && "border-primary bg-primary/5"
             )}
-            onClick={() => handlePostSelect(post.id)}
+            onClick={() => handlePostSelect(post.docId)}
           >
             <CardContent className="p-5">
               <div className="space-y-3">
@@ -204,9 +233,9 @@ export function PostsList() {
                       <span>{post.location}</span>
                     </div>
                   </div>
-                  <Badge variant="outline" className="bg-accent">
+                  {/* <Badge variant="outline" className="bg-accent">
                     {post.type}
-                  </Badge>
+                  </Badge> */}
                 </div>
                 <div className="flex flex-wrap items-center gap-4 text-sm">
                   <div className="flex items-center gap-1.5">
@@ -217,7 +246,7 @@ export function PostsList() {
                     <DollarSign className="h-4 w-4 text-primary" />
                     <span>{post.compensation}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 ml-auto">
+                  {/* <div className="flex items-center gap-1.5 ml-auto">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
                         <svg
@@ -239,7 +268,7 @@ export function PostsList() {
                     <span className="text-sm font-medium">
                       {post.rating.toFixed(1)}
                     </span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </CardContent>

@@ -1,4 +1,4 @@
-import { UserModel } from "@/types/models";
+import { UserModel } from "@/types";
 import { persistNSync } from "persist-and-sync";
 import { create } from "zustand";
 

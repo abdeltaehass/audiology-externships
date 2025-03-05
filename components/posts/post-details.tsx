@@ -6,78 +6,81 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Building2,
-  MapPin,
-  Calendar,
-  DollarSign,
-  Users,
-  Stethoscope,
-  GraduationCap,
-  Clock,
+  // MapPin,
+  // Calendar,
+  // DollarSign,
+  // Users,
+  // Stethoscope,
+  // GraduationCap,
+  // Clock,
 } from "lucide-react";
-import { SurveyResponse } from "@/types";
+// import { SurveyResponse } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { surveyService } from "@/service";
+import { Fragment } from "react";
 
-const mockSurveyResponses: SurveyResponse[] = [
-  {
-    section: "Basic Information",
-    items: [
-      {
-        question: "Externship Site Name",
-        answer: "Audiology Center of Excellence",
-        icon: <Building2 className="h-4 w-4" />,
-      },
-      {
-        question: "Location",
-        answer: "San Francisco, California",
-        icon: <MapPin className="h-4 w-4" />,
-      },
-      {
-        question: "Duration",
-        answer: "12 months",
-        icon: <Calendar className="h-4 w-4" />,
-      },
-      {
-        question: "Compensation",
-        answer: "$40,001 - $50,000",
-        icon: <DollarSign className="h-4 w-4" />,
-      },
-    ],
-  },
-  {
-    section: "Clinical Experience",
-    items: [
-      {
-        question: "Patient Population",
-        answer: ["Adults", "Pediatrics", "Geriatrics"],
-        icon: <Users className="h-4 w-4" />,
-      },
-      {
-        question: "Clinical Focus Areas",
-        answer: [
-          "Diagnostic Audiology",
-          "Hearing Aids",
-          "Cochlear Implants",
-          "Vestibular Testing",
-        ],
-        icon: <Stethoscope className="h-4 w-4" />,
-      },
-    ],
-  },
-  {
-    section: "Educational Details",
-    items: [
-      {
-        question: "Supervision Model",
-        answer: "Direct supervision with gradual independence",
-        icon: <GraduationCap className="h-4 w-4" />,
-      },
-      {
-        question: "Weekly Schedule",
-        answer: "40 hours/week, Monday-Friday",
-        icon: <Clock className="h-4 w-4" />,
-      },
-    ],
-  },
-];
+// const mockSurveyResponses: SurveyResponse[] = [
+//   {
+//     section: "Basic Information",
+//     items: [
+//       {
+//         question: "Externship Site Name",
+//         answer: "Audiology Center of Excellence",
+//         icon: <Building2 className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Location",
+//         answer: "San Francisco, California",
+//         icon: <MapPin className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Duration",
+//         answer: "12 months",
+//         icon: <Calendar className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Compensation",
+//         answer: "$40,001 - $50,000",
+//         icon: <DollarSign className="h-4 w-4" />,
+//       },
+//     ],
+//   },
+//   {
+//     section: "Clinical Experience",
+//     items: [
+//       {
+//         question: "Patient Population",
+//         answer: ["Adults", "Pediatrics", "Geriatrics"],
+//         icon: <Users className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Clinical Focus Areas",
+//         answer: [
+//           "Diagnostic Audiology",
+//           "Hearing Aids",
+//           "Cochlear Implants",
+//           "Vestibular Testing",
+//         ],
+//         icon: <Stethoscope className="h-4 w-4" />,
+//       },
+//     ],
+//   },
+//   {
+//     section: "Educational Details",
+//     items: [
+//       {
+//         question: "Supervision Model",
+//         answer: "Direct supervision with gradual independence",
+//         icon: <GraduationCap className="h-4 w-4" />,
+//       },
+//       {
+//         question: "Weekly Schedule",
+//         answer: "40 hours/week, Monday-Friday",
+//         icon: <Clock className="h-4 w-4" />,
+//       },
+//     ],
+//   },
+// ];
 
 type PostDetailsProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,8 +89,26 @@ type PostDetailsProps = {
 export function PostDetails({ postId }: PostDetailsProps) {
   const searchParams = useSearchParams();
   const selectedPost = postId || searchParams.get("post");
+  const searchQuery = searchParams.get("query")?.toLowerCase() || "";
 
-  if (!selectedPost) {
+  const getReviewsQuery = useQuery({
+    queryKey: ["reviews", { status: "accepted" }],
+    queryFn: surveyService.getApprovedReviews,
+  });
+
+  const filteredReviews = getReviewsQuery.data?.length
+    ? getReviewsQuery.data.filter(
+        (review) =>
+          review.siteName.toLowerCase().includes(searchQuery) ||
+          review.location.toLowerCase().includes(searchQuery) ||
+          review.duration.toLowerCase().includes(searchQuery)
+      )
+    : [];
+  const selectedReviewData = getReviewsQuery.data?.find(
+    (review) => review.docId === selectedPost
+  );
+
+  if (!selectedPost || !selectedReviewData || !filteredReviews.length) {
     return (
       <div className="flex h-full min-h-[50vh] flex-col items-center justify-center p-8 text-center">
         <Building2 className="h-12 w-12 text-muted-foreground/50" />
@@ -111,7 +132,64 @@ export function PostDetails({ postId }: PostDetailsProps) {
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-semibold">Site Name</h3>
+            <p className="text-muted-foreground">
+              {selectedReviewData?.siteName}
+            </p>
+          </div>
+          <div className="space-y-6">
+            {selectedReviewData?.surveyResult.map((section, idx) => (
+              <Fragment key={idx}>
+                <div>
+                  <h3 className="mb-2 text-lg font-semibold tracking-tight">
+                    {section.step.stepTitle}
+                  </h3>
+                  <div className="space-y-4">
+                    {section.questions.map(
+                      (item, itemIdx) =>
+                        (item.response || item.response?.length) && (
+                          <div key={itemIdx} className="space-y-0.5">
+                            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                              {/* {item.icon} */}
+                              <span>
+                                {itemIdx + 1}. {item.title}
+                              </span>
+                            </div>
+                            {Array.isArray(item.response) ? (
+                              <div className="flex flex-wrap">
+                                {"> "}{" "}
+                                {item.response.map((ans, ansIdx) => (
+                                  <Badge
+                                    key={ansIdx}
+                                    variant="secondary"
+                                    className="bg-primary/5"
+                                  >
+                                    {ans}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm">
+                                {"> "}
+                                {item.response}
+                              </p>
+                            )}
+                          </div>
+                        )
+                    )}
+                  </div>
+                </div>
+                {idx < selectedReviewData.surveyResult.length - 1 && (
+                  <Separator />
+                )}
+              </Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* <div className="space-y-8">
           {mockSurveyResponses.map((section, idx) => (
             <div key={idx}>
               <h3 className="mb-4 text-lg font-semibold tracking-tight">
@@ -149,7 +227,7 @@ export function PostDetails({ postId }: PostDetailsProps) {
               )}
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </ScrollArea>
   );
