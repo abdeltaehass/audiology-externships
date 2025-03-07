@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Check } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { SiteHeader } from "@/components/layout/site-header";
 import MaxWidthWrapper from "@/components/layout/max-width-wrapper";
+import Link from "next/link";
 
 const features = [
   "Unlimited externship reviews access",
@@ -69,7 +69,11 @@ export default function PricingPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full">Subscribe Now</Button>
+                  <Button className="w-full">
+                    <Link href="/checkout">
+                      Subscribe Now
+                    </Link>
+                  </Button>
                 </CardFooter>
               </div>
             </Card>
