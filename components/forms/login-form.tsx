@@ -151,6 +151,10 @@ export function LoginForm({
               <Link href="/sign-up" className="underline underline-offset-4">
                 Sign up
               </Link>
+              <br />
+              <Link href="/forgot-password" className="underline underline-offset-4">
+                Forgot Password?
+              </Link>
             </div>
           </form>
         </CardContent>
