@@ -5,7 +5,7 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
 import { doc, updateDoc, Timestamp, getDocs, collection, query, where } from "firebase/firestore";
-import { db, auth } from '@/lib/firebase/config';
+import { db, auth } from "@/lib/firebase/config";
 
 const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
 
@@ -22,7 +22,6 @@ const CheckoutPage = () => {
     }
 
     const usersCollectionRef = collection(db, 'users');
-    // Query based on the uid
     const q = query(usersCollectionRef, where("uid", "==", user.uid));
 
     try {
@@ -30,13 +29,12 @@ const CheckoutPage = () => {
 
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
-        // This is the Firestore document ID
         return doc.id;
       } else {
-      // This is when no doc is found
         return null;
       }
     } catch (error) {
+      console.error("Error fetching user document:", error);
       return null;
     }
   };
@@ -50,18 +48,16 @@ const CheckoutPage = () => {
     }
 
     try {
-      const docId = await getUserDocumentId(); // Get the user document ID
+      const docId = await getUserDocumentId();
 
       if (!docId) {
-      // Skip if no document found
         return;
       }
 
-      const userRef = doc(db, "users", docId); // Reference to the user document
+      const userRef = doc(db, "users", docId);
       const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 7); // Set expiration to 7 days from now
-  
-      // Update the user document
+      expirationDate.setDate(expirationDate.getDate() + 7);
+
       await updateDoc(userRef, {
         subscriber: true,
         subscriptionId: orderId,
@@ -70,7 +66,6 @@ const CheckoutPage = () => {
       });
 
       setHasSubscribed(true);
-      //console.log("Subscription updated successfully.");
     } catch (error) {
       alert("Error subscribing. Please try again.");
     }
@@ -113,14 +108,14 @@ const CheckoutPage = () => {
                         alert("Error: Order ID is missing.");
                         return;
                       }
-                      await handleSubscription(orderId); // Update the subscription
+                      await handleSubscription(orderId);
                     } catch (err) {
                       alert("Payment failed. Please try again.");
                     }
                   } else {
                     alert("An error occurred with your payment.");
                   }
-                }}                            
+                }}
                 onError={(err) => {
                   alert(`Payment failed: ${err.message || "Please try again later."}`);
                 }}
@@ -136,10 +131,18 @@ const CheckoutPage = () => {
             </Link>
           </div>
 
+          {/*Show success message and button after successful subscription */}
           {hasSubscribed && (
             <div className="mt-4 text-center text-green-600">
-              <p>Your subscription was successful! Thank you for subscribing.</p><br/>
+              <p>Your subscription was successful! Thank you for subscribing.</p>
               <p>To unsubscribe, please go to the settings page and cancel your subscription.</p>
+              
+              {/*New Button to Externships */}
+              <Link href="/externships">
+                <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                  Go to Externships
+                </button>
+              </Link>
             </div>
           )}
         </div>

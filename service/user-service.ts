@@ -33,6 +33,9 @@ export const registerUser = async (email: string, password: string) => {
       email: userCredential.user.email,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
+      subscriber: false,
+      subscriptionId: "", 
+      expirationDate: Timestamp.now(),
     },
   });
   return userCredential.user;

@@ -7,6 +7,9 @@ export interface UserModel {
   email: string | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  subscriber: boolean;
+  subscriptionId: string;
+  expirationDate: Timestamp | null;
 }
 
 export interface SurveyStep {

@@ -79,10 +79,12 @@ export default function Page() {
                     Review these options as you apply and make decisions about
                     your externship.
                   </p>
-                  <Button className="group">
-                    Explore Externships
-                    <ArrowRight className="group-hover:translate-x-1 transition-transform size-5" />
-                  </Button>
+                  <Link href="/externships">
+                    <Button className="group">
+                      Explore Externships
+                      <ArrowRight className="group-hover:translate-x-1 transition-transform size-5" />
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
 
