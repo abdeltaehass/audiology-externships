@@ -35,7 +35,7 @@ export const registerUser = async (email: string, password: string) => {
       updatedAt: Timestamp.now(),
       subscriber: false,
       subscriptionId: "", 
-      expirationDate: Timestamp.now(),
+      expirationDate: null,
     },
   });
   return userCredential.user;
