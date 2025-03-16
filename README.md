@@ -49,13 +49,9 @@ Our goal is to make easier for audiology students to find relevant externships f
 ### Core Features
 
 - **Account Management**: Sign up, login, and manage personal details.
-- **Push Notifications**: Alerts for survey submissions and admin approvals.
 - **Survey Management**: Timestamped survey submissions, admin approval workflows, and database integration.
 - **Payment System**: Secure payment account setup and management.
 - **Admin Portal**: Tools for administrators to manage surveys and customize the site.
-
-### Optional Features (Future Scope)
-
 - Advanced search functionality for records.
 - Code-free customization tools for the website.
 
@@ -128,10 +124,10 @@ Using **JIRA** for task tracking, here are the key milestones for our project:
 | ----------- | -------------------------------- | -------------- |
 | **09/2024** | Initial Project Charter Approval | ✅ Completed   |
 | **10/2024** | Functional Requirements Document | ✅ Completed   |
-| **11/2024** | Basic Survey Submission Feature  | 🔄 In Progress |
-| **01/2025** | Payment System Implementation    | 🔄 In Progress |
-| **03/2025** | Admin Portal with Full Features  | ⬜ Upcoming    |
-| **05/2025** | Final Product Delivery           | ⬜ Upcoming    |
+| **11/2024** | Basic Survey Submission Feature  | ✅ Completed   |
+| **01/2025** | Payment System Implementation    | ✅ Completed   |
+| **03/2025** | Admin Portal with Full Features  | ✅ Completed   |
+| **05/2025** | Final Product Delivery           | 🔄 In Progress |
 
 ---
 
