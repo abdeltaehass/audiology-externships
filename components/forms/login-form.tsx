@@ -1,3 +1,9 @@
+// LOGIN FORM COMPONENT
+// This component renders a user login form. It allows users to input their email and password,
+// and uses a Firebase-based userService to authenticate. If login is successful, the user is
+// redirected to the home page. It also handles errors, toggles password visibility, and includes
+// links to registration and password reset pages.
+
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
@@ -28,35 +34,39 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
   const { user, signIn, signOut } = useAuthStore();
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
+  // Component state for form inputs and behavior
+  const [showPassword, setShowPassword] = useState(false); // toggle password visibility
+  const [loading, setLoading] = useState(false);           // show loading on submit
+  const [email, setEmail] = useState("");                  // input state: email
+  const [password, setPassword] = useState("");            // input state: password
+
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Attempt login via Firebase service
       const user = await userService.loginUser(email, password);
       if (!user) {
         toast.error("Login failed. Please try again.");
         return;
       }
 
+      // Fetch additional user data from database
       const userData = await userService.getUserData(user.uid);
       if (!userData) {
         toast.error("Login failed. Please try again.");
         return;
       }
 
+      // Store user in global auth store
       signIn(userData);
-
       toast.success("Logged in successfully!");
-      router.replace("/");
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.replace("/"); // redirect to homepage
     } catch (error: any) {
+      // Handle Firebase login errors
       const errorCode = error?.code as keyof typeof authErrors;
       toast.error(authErrors?.[errorCode] || "Login failed. Please try again.");
       console.log("errorCode", errorCode);
@@ -65,17 +75,14 @@ export function LoginForm({
     }
   };
 
+  // Show message if user is already logged in
   if (user) {
     return (
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">
-              You are already logged in
-            </CardTitle>
-            <CardDescription>
-              You can log out to switch accounts.
-            </CardDescription>
+            <CardTitle className="text-2xl">You are already logged in</CardTitle>
+            <CardDescription>You can log out to switch accounts.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={signOut} className="w-full">
@@ -89,6 +96,7 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
+      {/* Logo + home link */}
       <Link href="/" className="font-semibold">
         <Image
           className="h-8 w-auto mx-auto"
@@ -98,6 +106,7 @@ export function LoginForm({
           height={32}
         />
       </Link>
+
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Login</CardTitle>
@@ -105,9 +114,11 @@ export function LoginForm({
             Enter your email below to access your account.
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
+              {/* Email input */}
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -119,6 +130,8 @@ export function LoginForm({
                   required
                 />
               </div>
+
+              {/* Password input with visibility toggle */}
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -142,10 +155,14 @@ export function LoginForm({
                   </Button>
                 </div>
               </div>
+
+              {/* Submit button */}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Logging in..." : "Login"}
               </Button>
             </div>
+
+            {/* Footer links */}
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link href="/sign-up" className="underline underline-offset-4">
