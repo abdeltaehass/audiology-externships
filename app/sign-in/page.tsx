@@ -1,3 +1,7 @@
+//SIGN IN PAGE
+/*This code defines a simple login page that centers a login form (<LoginForm />) on the screen with 
+responsive padding and a light neutral background. It ensures the form is contained within a maximum 
+width for consistent layout across devices. */
 import { LoginForm } from "@/components/forms/login-form";
 
 export default function Page() {

@@ -1,16 +1,13 @@
+// ADMIN PAGE
+// This page is used by admin users to manage and moderate externship reviews submitted by students.
+// It includes features like viewing detailed survey responses, approving or rejecting submissions,
+// and deleting reviews. Data is fetched and mutated using React Query.
+
 "use client";
 
 import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
-  // Building2,
-  // Calendar,
-  // Clock,
-  // DollarSign,
-  // GraduationCap,
-  // MapPin,
-  // Stethoscope,
-  // Users,
   Check,
   Eye,
   RefreshCw,
@@ -20,6 +17,7 @@ import {
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
 
+// UI components
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,78 +38,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+// API services and types
 import { surveyService } from "@/service";
-// import { SurveyResponse } from "@/types";
 import { ReviewModel } from "@/types";
 
-// const mockSurveyResponses: SurveyResponse[] = [
-//   {
-//     section: "Basic Information",
-//     items: [
-//       {
-//         question: "Externship Site Name",
-//         answer: "Audiology Center of Excellence",
-//         icon: <Building2 className="h-4 w-4" />,
-//       },
-//       {
-//         question: "Location",
-//         answer: "San Francisco, California",
-//         icon: <MapPin className="h-4 w-4" />,
-//       },
-//       {
-//         question: "Duration",
-//         answer: "12 months",
-//         icon: <Calendar className="h-4 w-4" />,
-//       },
-//       {
-//         question: "Compensation",
-//         answer: "$40,001 - $50,000",
-//         icon: <DollarSign className="h-4 w-4" />,
-//       },
-//     ],
-//   },
-//   {
-//     section: "Clinical Experience",
-//     items: [
-//       {
-//         question: "Patient Population",
-//         answer: ["Adults", "Pediatrics", "Geriatrics"],
-//         icon: <Users className="h-4 w-4" />,
-//       },
-//       {
-//         question: "Clinical Focus Areas",
-//         answer: [
-//           "Diagnostic Audiology",
-//           "Hearing Aids",
-//           "Cochlear Implants",
-//           "Vestibular Testing",
-//         ],
-//         icon: <Stethoscope className="h-4 w-4" />,
-//       },
-//     ],
-//   },
-//   {
-//     section: "Educational Details",
-//     items: [
-//       {
-//         question: "Supervision Model",
-//         answer: "Direct supervision with gradual independence",
-//         icon: <GraduationCap className="h-4 w-4" />,
-//       },
-//       {
-//         question: "Weekly Schedule",
-//         answer: "40 hours/week, Monday-Friday",
-//         icon: <Clock className="h-4 w-4" />,
-//       },
-//     ],
-//   },
-// ];
-
 export default function ExternshipReviewsPage() {
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedReview, setSelectedReview] = useState<ReviewModel | null>(
-    null
-  );
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false); // controls modal visibility
+  const [selectedReview, setSelectedReview] = useState<ReviewModel | null>(null); // stores the selected review
+
+  // Fetch all submitted reviews using React Query
   const getReviewsQuery = useQuery({
     queryKey: ["reviews"],
     queryFn: surveyService.getReviews,
@@ -119,6 +55,7 @@ export default function ExternshipReviewsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header and refresh button */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
           Externship Reviews Management
@@ -129,13 +66,11 @@ export default function ExternshipReviewsPage() {
           onClick={() => getReviewsQuery.refetch()}
           disabled={getReviewsQuery.isLoading || getReviewsQuery.isRefetching}
         >
-          <RefreshCw
-            className={
-              getReviewsQuery.isRefetching ? "animate-spin" : undefined
-            }
-          />
+          <RefreshCw className={getReviewsQuery.isRefetching ? "animate-spin" : undefined} />
         </Button>
       </div>
+
+      {/* Reviews Table */}
       <Table>
         <TableHeader>
           <TableRow>
@@ -147,15 +82,15 @@ export default function ExternshipReviewsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
+          {/* Loading placeholder */}
           {getReviewsQuery.isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell colSpan={5} className="w-full space-x-2 p-2">
-                  <Skeleton className="h-8" />
-                </TableCell>
+                <TableCell colSpan={5}><Skeleton className="h-8" /></TableCell>
               </TableRow>
             ))
           ) : getReviewsQuery.data?.length ? (
+            // Map each review to its own row
             getReviewsQuery.data.map((review) => (
               <ReviewRow
                 key={review.docId as string}
@@ -166,11 +101,9 @@ export default function ExternshipReviewsPage() {
               />
             ))
           ) : (
+            // No reviews found
             <TableRow>
-              <TableCell
-                colSpan={5}
-                className="text-center text-muted-foreground py-8"
-              >
+              <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                 No reviews found.
               </TableCell>
             </TableRow>
@@ -178,6 +111,7 @@ export default function ExternshipReviewsPage() {
         </TableBody>
       </Table>
 
+      {/* Review Details Modal */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -189,20 +123,21 @@ export default function ExternshipReviewsPage() {
               </em>{" "}
               {selectedReview?.createdAt && "on "}
               <em className="font-semibold">
-                {selectedReview?.createdAt &&
-                  format(selectedReview.createdAt.toDate(), "Pp")}
+                {selectedReview?.createdAt && format(selectedReview.createdAt.toDate(), "Pp")}
               </em>
             </DialogDescription>
           </DialogHeader>
+
+          {/* Scrollable section with survey responses */}
           <ScrollArea className="mt-4 h-[60vh]">
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold">Site Name</h3>
-                <p className="text-muted-foreground">
-                  {selectedReview?.siteName}
-                </p>
+                <p className="text-muted-foreground">{selectedReview?.siteName}</p>
               </div>
+
               <div className="space-y-6">
+                {/* Render each section and its answered questions */}
                 {selectedReview?.surveyResult.map((section, idx) => (
                   <Fragment key={idx}>
                     <div>
@@ -210,43 +145,30 @@ export default function ExternshipReviewsPage() {
                         {section.step.stepTitle}
                       </h3>
                       <div className="space-y-4">
-                        {section.questions.map(
-                          (item, itemIdx) =>
-                            (item.response || item.response?.length) && (
-                              <div key={itemIdx} className="space-y-0.5">
-                                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                                  {/* {item.icon} */}
-                                  <span>
-                                    {itemIdx + 1}. {item.title}
-                                  </span>
-                                </div>
-                                {Array.isArray(item.response) ? (
-                                  <div className="flex flex-wrap">
-                                    {"> "}{" "}
-                                    {item.response.map((ans, ansIdx) => (
-                                      <Badge
-                                        key={ansIdx}
-                                        variant="secondary"
-                                        className="bg-primary/5"
-                                      >
-                                        {ans}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-sm">
-                                    {"> "}
-                                    {item.response}
-                                  </p>
-                                )}
+                        {section.questions.map((item, itemIdx) =>
+                          (item.response || item.response?.length) && (
+                            <div key={itemIdx} className="space-y-0.5">
+                              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                <span>{itemIdx + 1}. {item.title}</span>
                               </div>
-                            )
+                              {/* Show array of answers as badges */}
+                              {Array.isArray(item.response) ? (
+                                <div className="flex flex-wrap">
+                                  {item.response.map((ans, ansIdx) => (
+                                    <Badge key={ansIdx} variant="secondary" className="bg-primary/5">
+                                      {ans}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm">{item.response}</p>
+                              )}
+                            </div>
+                          )
                         )}
                       </div>
                     </div>
-                    {idx < selectedReview.surveyResult.length - 1 && (
-                      <Separator />
-                    )}
+                    {idx < selectedReview.surveyResult.length - 1 && <Separator />}
                   </Fragment>
                 ))}
               </div>
@@ -258,18 +180,21 @@ export default function ExternshipReviewsPage() {
   );
 }
 
+// Component to render a single row of the reviews table
 type ReviewRowProps = {
   review: ReviewModel;
   getReviewsQuery: UseQueryResult;
   setSelectedReview: (review: ReviewModel | null) => void;
   setIsViewDialogOpen: (value: boolean) => void;
 };
+
 function ReviewRow({
   review,
   getReviewsQuery,
   setSelectedReview,
   setIsViewDialogOpen,
 }: ReviewRowProps) {
+  // Mutation to approve or reject a review
   const updateStatusMutation = useMutation({
     mutationFn: surveyService.updateReview,
     onSuccess: () => {
@@ -280,6 +205,8 @@ function ReviewRow({
       toast.error("Failed to update review status");
     },
   });
+
+  // Mutation to delete a review
   const deleteReviewMutation = useMutation({
     mutationFn: surveyService.deleteReview,
     onSuccess: () => {
@@ -292,7 +219,7 @@ function ReviewRow({
   });
 
   return (
-    <TableRow key={review.docId}>
+    <TableRow>
       <TableCell>{review.siteName}</TableCell>
       <TableCell>{review.user?.name || review.user?.email || "-"}</TableCell>
       <TableCell>{format(review.createdAt.toDate(), "Pp")}</TableCell>
@@ -312,6 +239,7 @@ function ReviewRow({
       </TableCell>
       <TableCell>
         <div className="flex space-x-2">
+          {/* View button */}
           <Button
             size="icon"
             variant="outline"
@@ -322,6 +250,8 @@ function ReviewRow({
           >
             <Eye className="size-4" />
           </Button>
+
+          {/* Approve/Reject buttons (only for pending) */}
           {review.status === "pending" && (
             <>
               <Button
@@ -341,6 +271,7 @@ function ReviewRow({
               >
                 <Check className="size-2" />
               </Button>
+
               <Button
                 size="icon"
                 variant="destructive"
@@ -360,6 +291,8 @@ function ReviewRow({
               </Button>
             </>
           )}
+
+          {/* Delete button (available in all states) */}
           <Button
             size="icon"
             variant="destructive"
