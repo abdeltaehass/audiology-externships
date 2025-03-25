@@ -35,7 +35,7 @@ export default function Page() {
             </div>
             <div className="relative min-h-[55vh]">
               <Image
-                src="./hero-img.jpg"
+                src="/hero-img.jpg"
                 alt="Audiologist examining a patient"
                 fill
                 className="object-cover object-center"
@@ -57,7 +57,7 @@ export default function Page() {
 
           <div className="grid gap-4 grid-cols-2 max-lg:grid-cols-1">
             <Image
-              src="./coverAI.png"
+              src="/coverAI.png"
               alt="Externship student"
               className="object-cover object-center h-full w-full rounded-xl max-h-[600px]"
               width={500}
