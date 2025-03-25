@@ -5,12 +5,13 @@
 // navigation to the externships page.
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
 import { doc, updateDoc, Timestamp, getDocs, collection, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase/config";
+import { useRouter } from "next/navigation";
 
 // PayPal client ID from environment variables
 const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
@@ -19,12 +20,23 @@ const CheckoutPage = () => {
   const amount = "1"; // Subscription price in USD
   const user = useAuthStore((state) => state.user); // Get current user from auth store
   const [hasSubscribed, setHasSubscribed] = useState(false); // Tracks if user has successfully subscribed
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user?.subscriber) {
+      setHasSubscribed(true);
+    }
+    if (user === null) {
+      router.push('/'); // Redirect to home or login if not signed in
+    }
+  }, [user, router]);
 
   // Fetch the Firestore document ID for the current user
   const getUserDocumentId = async () => {
-    const user = auth.currentUser;
-
-    if (!user) return null;
+    const currentUser = auth.currentUser;
+    if (!currentUser || !user) {
+      return null;
+    }
 
     const usersCollectionRef = collection(db, 'users');
     const q = query(usersCollectionRef, where("uid", "==", user.uid));
@@ -32,8 +44,7 @@ const CheckoutPage = () => {
     try {
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        return doc.id; // Return document ID
+        return querySnapshot.docs[0].id; // Return document ID
       } else {
         return null;
       }
@@ -45,9 +56,8 @@ const CheckoutPage = () => {
 
   // Handle what happens after a successful PayPal transaction
   const handleSubscription = async (orderId: string) => {
-    const user = auth.currentUser;
-  
-    if (!user) {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
       alert("You must be logged in to subscribe.");
       return;
     }
@@ -57,7 +67,6 @@ const CheckoutPage = () => {
       if (!docId) return;
 
       const userRef = doc(db, "users", docId);
-
       // Set subscription to expire in 7 days from now
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + 7);
@@ -81,16 +90,23 @@ const CheckoutPage = () => {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <div className="py-12 md:py-24 max-w-6xl mx-auto">
-          {/* Page Header */}
-          <h1 className="text-3xl font-bold text-center md:text-4xl">
-            Checkout
-          </h1>
+          <h1 className="text-3xl font-bold text-center md:text-4xl">Checkout</h1>
           <p className="text-lg mt-4 text-center">
             You are about to subscribe to the Audiology Membership Plan for $1/week.
           </p>
 
-          {/* PayPal Button */}
           <div className="flex justify-center mt-12">
+          {hasSubscribed ? (
+              <div className="text-center text-green-600">
+                <p>You're already subscribed!</p>
+                <p className="mt-2">Thank you for supporting us.</p>
+                <Link href="/">
+                  <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Go Back Home
+                  </button>
+                </Link>
+              </div>
+            ) : (
             <PayPalScriptProvider options={{ clientId: paypalClientId }}>
               <PayPalButtons
                 style={{ layout: "vertical", shape: "rect" }}
@@ -109,7 +125,7 @@ const CheckoutPage = () => {
                   });
                 }}
                 onApprove={async (data, actions) => {
-                  // Handle payment approval
+                  //Handle payment approval
                   if (actions.order) {
                     try {
                       const order = await actions.order.capture();
@@ -131,6 +147,7 @@ const CheckoutPage = () => {
                 }}
               />
             </PayPalScriptProvider>
+          )}
           </div>
 
           {/* Cancel Button */}
