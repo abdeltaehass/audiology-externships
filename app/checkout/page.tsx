@@ -46,7 +46,7 @@ const CheckoutPage = () => {
 
   const [errorMessage, setErrorMessage] = useState(""); // State for login error message
 
-  const handleSubscription = async (orderId: string) => {
+const handleSubscription = async (orderId: string) => {
   const user = auth.currentUser;
 
   if (!user) {
@@ -167,7 +167,22 @@ const CheckoutPage = () => {
                 </button>
               </Link>
             </div>
-          </div>
+        </div>
+)}
+
+          {/* Success Message and Navigation after Subscription */}
+          {hasSubscribed && (
+            <div className="mt-4 text-center text-green-600">
+              <p>Your subscription was successful! Thank you for subscribing.</p>
+              <p>To unsubscribe, please go to the settings page and cancel your subscription.</p>
+
+              {/* Button to navigate to Externships page */}
+              <Link href="/externships">
+                <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                  Go to Externships
+                </button>
+              </Link>
+            </div>
           )}
         </div>
       </main>

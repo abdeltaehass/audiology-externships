@@ -17,7 +17,7 @@ const faqs = [
   {
     question: "What is Audiology Externship?",
     answer:
-      "The Audiology Externship website is a platform designed to help audiologists manage / review externships, and provide valuable resources for students and professionals alike.",
+      "The Audiology Externship website is a platform designed to help audiology students manage/review exernships, and provide valuable resources for potential audiology externs.",
   },
   {
     question: "How do I fill out a survey?",
@@ -51,20 +51,14 @@ const faqs = [
       "By navigating to the Audiology Externship home page, users may click on the 'Explore Externships' button. Users are then redirected to the desired page, where users can view Externships based on their specified criteria.",
   },
   {
-    question: "What should I do if I forget my password? [Work in Progress]",
+    question: "What should I do if I forget my password?",
     answer:
-      "If you forget your password, please send an email to the website support team for further assistance in resetting your password.",
+      "If you forget your password, please navigate to the Sign-In page and click the 'Forgot Password link where you can then reset your password by following the on-screen prompts",
   },
   {
     question: "Can I update my survey responses later?",
     answer:
       "No. Once you submit a survey, you will be unable to edit it later. Please ensure all of the information provided is accurate.",
-  },
-  {
-    question:
-      "Is there any fee associated with using the Audiology Externship platform?",
-    answer:
-      "There is not a fee for browsing through the website normally. However, users may opt to register and pay a $1 weekly subscription, which allows the ability to view Externships ratings and other detailed information.",
   },
   {
     question: "What happens after I submit my externship survey?",

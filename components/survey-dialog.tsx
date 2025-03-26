@@ -121,29 +121,9 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
     );
 
     currentQuestions.forEach((question: SurveyQuestion) => {
-      if (
-        question.isRequired &&
-        !formData[question.questionId]
-        // && evaluateCondition(question.enableIf, formData)
-      ) {
+      if (question.isRequired && !formData[question.questionId]){
         newErrors[question.questionId] = "This field is required.";
       }
-
-      // if (question.validators) {
-      //   question.validators.forEach((validator: any) => {
-      //     if (validator.type === "expression") {
-      //       let isValid = true;
-      //       if (validator.expression === "isValidInput({question})") {
-      //         isValid = isValidInput(formData[question.questionId]);
-      //       } else if (validator.expression === "isValidYear({question})") {
-      //         isValid = isValidYear(formData[question.questionId]);
-      //       }
-      //       if (!isValid) {
-      //         newErrors[question.questionId] = validator.text;
-      //       }
-      //     }
-      //   });
-      // }
     });
 
     setErrors(newErrors);
@@ -222,21 +202,34 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
             ? q.response.join(", ")
             : q.response || "";
 
-          if (q.questionId === getSettingsQuery.data.siteNameQuestionId)
-            return { ...acc, siteName: answer };
-          else if (q.questionId === getSettingsQuery.data.locationQuestionId)
-            return { ...acc, location: answer };
-          else if (q.questionId === getSettingsQuery.data.durationQuestionId)
-            return { ...acc, duration: answer };
-          else if (
-            q.questionId === getSettingsQuery.data.compensationQuestionId
-          )
-            return { ...acc, compensation: answer };
-
-          return acc;
-        },
-        { siteName: "", location: "", duration: "", compensation: "" }
-      );
+            if (q.title.toLowerCase().includes("externship site name") || 
+            q.title === "Externship Site Name:" ||
+            q.questionId === getSettingsQuery.data.siteNameQuestionId) {
+          return { ...acc, siteName: answer };
+        }
+        else if (q.title.toLowerCase().includes("city of externship") || 
+                 q.questionId === getSettingsQuery.data.locationQuestionId) {
+          const city = answer;
+          const stateQuestion = allQuestions.find(q2 => 
+            q2.title.includes("Externship State or Territory") ||
+            q2.questionId === getSettingsQuery.data.locationQuestionId
+          );
+          const state = stateQuestion?.response || "";
+          return { ...acc, location: `${city}, ${state}`.trim() };
+        }
+        else if (q.title.toLowerCase().includes("duration of externship") || 
+                 q.questionId === getSettingsQuery.data.durationQuestionId) {
+          return { ...acc, duration: answer };
+        }
+        else if (q.title.toLowerCase().includes("compensation") || 
+                 q.questionId === getSettingsQuery.data.compensationQuestionId) {
+          return { ...acc, compensation: answer };
+        }
+    
+        return acc;
+      },
+      { siteName: "", location: "", duration: "", compensation: "" }
+    );
 
       const reviewPayload: ReviewModel = {
         ...getSettingsQuery.data,
@@ -260,10 +253,6 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
   };
 
   const renderQuestion = (question: SurveyQuestion, index: number) => {
-    // if (!evaluateCondition(question.enableIf, formData)) {
-    //   return null;
-    // }
-
     switch (question.type) {
       case "text":
         return (
@@ -284,8 +273,6 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
                 })
               }
               required={question.isRequired}
-              // maxLength={question.maxLength}
-              // placeholder={question.placeholder}
             />
             {errors[question.questionId] && (
               <Alert variant="destructive">
@@ -480,6 +467,16 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
     }
   };
 
+  const handleDialogOpen = (open: boolean) => {
+    if (!user && open) {
+      toast.info("Please login or sign up", {
+        description: "You need to be logged in to submit a survey.",
+      });
+      return;
+    }
+    setOpen(open);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -493,7 +490,15 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
             getStepsQuery.isLoading || getQuestionsQuery.isLoading,
         })}
       >
-        {getStepsQuery.isLoading || getQuestionsQuery.isLoading ? (
+        {!user ? (
+          <div className="flex flex-col items-center justify-center p-6 space-y-4 text-center">
+            <h3 className="text-xl font-semibold">Authentication Required</h3>
+            <p className="text-muted-foreground">
+              Please login or sign up to access the survey.
+            </p>
+            <Button onClick={() => setOpen(false)}>Close</Button>
+          </div>
+        ) : getStepsQuery.isLoading || getQuestionsQuery.isLoading ? (
           <Loader className="size-6 animate-spin text-muted-foreground" />
         ) : (
           <>

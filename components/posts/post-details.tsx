@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useSearchParams } from "next/navigation";
@@ -18,6 +19,9 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { surveyService } from "@/service";
 import { Fragment } from "react";
+import externshipSurveyData from "@/constants/externshipSurveyData.json";
+import { ExternshipData } from "@/types/externship-Data";
+import { ReviewModel } from "@/types";
 
 // const mockSurveyResponses: SurveyResponse[] = [
 //   {
@@ -86,29 +90,108 @@ type PostDetailsProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   postId?: string | null;
 };
+function isReviewModel(post: ReviewModel | ExternshipData): post is ReviewModel {
+  return 'docId' in post && 'surveyResult' in post;
+}
+
+function getSiteName(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+
+    if (post.siteName) return post.siteName;
+    if (post.surveyResult && post.surveyResult.length > 0) {
+      for (const section of post.surveyResult) {
+        const siteNameQuestion = section.questions.find(
+          q => q.title.toLowerCase().includes("externship site name") ||
+               q.title === "Externship Site Name:" ||
+               q.questionId === post.siteNameQuestionId
+        );
+        if (siteNameQuestion?.response) {
+          return siteNameQuestion.response as string;
+        }
+      }
+    }
+    return "Unnamed Site";
+  }
+  return post["Externship Site Name"] || "Unnamed Site";
+}
+
+function getCity(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    if (post.location) return post.location.split(',')[0].trim();
+    return (
+      post.surveyResult[0]?.questions.find(q => q.title === "City of Externship?")?.response as string || 
+      "Unknown City"
+    );
+  }
+  return post["City of Externship?"] || "Unknown City";
+}
+
+function getState(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    if (post.location) {
+      const parts = post.location.split(',');
+      return parts.length > 1 ? parts[1].trim() : "Unknown State";
+    }
+    return (
+      post.surveyResult[0]?.questions.find(q => q.title === "Externship State or Territory?")?.response as string || 
+      "Unknown State"
+    );
+  }
+  return post["Externship State or Territory?"] || "Unknown State";
+}
+
+function getDuration(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    if (post.duration) return post.duration;
+    return (
+      post.surveyResult[0]?.questions.find(q => q.title === "Duration of Externship?")?.response as string || 
+      "Unknown Duration"
+    );
+  }
+  return post["Duration of Externship?"] || "Unknown Duration";
+}
+
+export function getPostId(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    return post.docId;
+  }return `externship-${String(post["Externship Site Name"])
+    .toLowerCase()
+    .replace(/\s+/g, '-')}-${String(post["City of Externship?"])
+    .toLowerCase()
+    .replace(/\s+/g, '-')}`;
+}
+
+
 export function PostDetails({ postId }: PostDetailsProps) {
   const searchParams = useSearchParams();
   const selectedPost = postId || searchParams.get("post");
-  const searchQuery = searchParams.get("query")?.toLowerCase() || "";
 
   const getReviewsQuery = useQuery({
     queryKey: ["reviews", { status: "accepted" }],
     queryFn: surveyService.getApprovedReviews,
   });
 
-  const filteredReviews = getReviewsQuery.data?.length
-    ? getReviewsQuery.data.filter(
-        (review) =>
-          review.siteName.toLowerCase().includes(searchQuery) ||
-          review.location.toLowerCase().includes(searchQuery) ||
-          review.duration.toLowerCase().includes(searchQuery)
-      )
-    : [];
-  const selectedReviewData = getReviewsQuery.data?.find(
-    (review) => review.docId === selectedPost
-  );
+  const submittedSurveys = getReviewsQuery.data || [];
+  const externshipData = externshipSurveyData as ExternshipData[];
+  const combinedData = [...externshipData, ...submittedSurveys]
+  .filter(post => {
+    const siteName = isReviewModel(post)
+      ? post.siteName || 
+        post.surveyResult?.[0]?.questions?.find(
+          (q: any) => q.title === "Externship Site Name"
+        )?.response as string
+      : post["Externship Site Name"];
+    return siteName && !/unnamed/i.test(siteName) && siteName.trim() !== "";
+  });
 
-  if (!selectedPost || !selectedReviewData || !filteredReviews.length) {
+  const selectedPostData = combinedData.find(post => {
+    if (isReviewModel(post)) {
+      return post.docId === selectedPost;
+    }
+    return `externship-${post["Externship Site Name"]}-${post["City of Externship?"]}` === selectedPost;
+  });
+
+  if (!selectedPost || !selectedPostData) {
     return (
       <div className="flex h-full min-h-[50vh] flex-col items-center justify-center p-8 text-center">
         <Building2 className="h-12 w-12 text-muted-foreground/50" />
@@ -125,7 +208,7 @@ export function PostDetails({ postId }: PostDetailsProps) {
       <div className="p-6 py-4">
         <div className="mb-6">
           <h2 className="text-2xl font-bold tracking-tight">
-            Survey Responses
+            {isReviewModel(selectedPostData) ? "Survey Responses" : "Externship Details"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Detailed information about the externship experience
@@ -136,23 +219,113 @@ export function PostDetails({ postId }: PostDetailsProps) {
           <div>
             <h3 className="font-semibold">Site Name</h3>
             <p className="text-muted-foreground">
-              {selectedReviewData?.siteName}
+              {getSiteName(selectedPostData)}
             </p>
           </div>
-          <div className="space-y-6">
-            {selectedReviewData?.surveyResult.map((section, idx) => (
-              <Fragment key={idx}>
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold tracking-tight">
-                    {section.step.stepTitle}
-                  </h3>
-                  <div className="space-y-4">
-                    {section.questions.map(
+          <div>
+            <h3 className="font-semibold">Location</h3>
+            <p className="text-muted-foreground">
+              {getCity(selectedPostData)}, {getState(selectedPostData)}
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold">Duration</h3>
+            <p className="text-muted-foreground">
+              {getDuration(selectedPostData)}
+            </p>
+          </div>
+
+          {isReviewModel(selectedPostData) ? (
+            // Render database survey results
+            <div className="space-y-6">
+              {selectedPostData.surveyResult?.map((section, idx) => (
+                <Fragment key={idx}>
+                  <div>
+                    <h3 className="mb-2 text-lg font-semibold tracking-tight">
+                      {section.step.stepTitle}
+                    </h3>
+                    <div className="space-y-4">
+                      {section.questions.map(
+                        (question, questionIdx) =>
+                          (question.response || question.response?.length) && (
+                            <div key={questionIdx} className="space-y-0.5">
+                              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                <span>
+                                  {questionIdx + 1}. {question.title}
+                                </span>
+                              </div>
+                              {Array.isArray(question.response) ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {question.response.map((ans, ansIdx) => (
+                                    <Badge
+                                      key={ansIdx}
+                                      variant="secondary"
+                                      className="bg-primary/5"
+                                    >
+                                      {ans}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm">
+                                  {"> "}
+                                  {question.response}
+                                </p>
+                              )}
+                            </div>
+                          )
+                      )}
+                    </div>
+                  </div>
+                  {idx < selectedPostData.surveyResult.length - 1 && (
+                    <Separator />
+                  )}
+                </Fragment>
+              ))}
+            </div>
+          ) : (
+            // Render file-based survey fields
+            <div className="space-y-6">
+              {Object.entries(selectedPostData)
+                .filter(([key]) => !key.startsWith("field") && key !== "ID")
+                .map(([key, value], idx) => {
+                  const displayValue = Array.isArray(value)
+                    ? value.join(", ")
+                    : String(value);
+
+                  return (
+                    <Fragment key={idx}>
+                      <div>
+                        <h3 className="mb-2 text-lg font-semibold tracking-tight">
+                          {key}
+                        </h3>
+                        <div className="space-y-0.5">
+                          <p className="text-sm">
+                            {"> "}
+                            {displayValue}
+                          </p>
+                        </div>
+                      </div>
+                      {idx < Object.keys(selectedPostData).length - 1 && (
+                        <Separator />
+                      )}
+                    </Fragment>
+                  );
+                })}
+            </div>
+          )}
+        </div>
+      </div>
+    </ScrollArea>
+  );
+}
+      
+                      {/* {section.questions.map(
                       (item, itemIdx) =>
                         (item.response || item.response?.length) && (
                           <div key={itemIdx} className="space-y-0.5">
                             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                              {/* {item.icon} */}
+                              {/* {item.icon} 
                               <span>
                                 {itemIdx + 1}. {item.title}
                               </span>
@@ -189,7 +362,7 @@ export function PostDetails({ postId }: PostDetailsProps) {
           </div>
         </div>
 
-        {/* <div className="space-y-8">
+      <div className="space-y-8">
           {mockSurveyResponses.map((section, idx) => (
             <div key={idx}>
               <h3 className="mb-4 text-lg font-semibold tracking-tight">
@@ -228,7 +401,3 @@ export function PostDetails({ postId }: PostDetailsProps) {
             </div>
           ))}
         </div> */}
-      </div>
-    </ScrollArea>
-  );
-}
