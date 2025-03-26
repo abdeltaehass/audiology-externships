@@ -202,21 +202,34 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
             ? q.response.join(", ")
             : q.response || "";
 
-          if (q.questionId === getSettingsQuery.data.siteNameQuestionId)
-            return { ...acc, siteName: answer };
-          else if (q.questionId === getSettingsQuery.data.locationQuestionId)
-            return { ...acc, location: answer };
-          else if (q.questionId === getSettingsQuery.data.durationQuestionId)
-            return { ...acc, duration: answer };
-          else if (
-            q.questionId === getSettingsQuery.data.compensationQuestionId
-          )
-            return { ...acc, compensation: answer };
-
-          return acc;
-        },
-        { siteName: "", location: "", duration: "", compensation: "" }
-      );
+            if (q.title.toLowerCase().includes("externship site name") || 
+            q.title === "Externship Site Name:" ||
+            q.questionId === getSettingsQuery.data.siteNameQuestionId) {
+          return { ...acc, siteName: answer };
+        }
+        else if (q.title.toLowerCase().includes("city of externship") || 
+                 q.questionId === getSettingsQuery.data.locationQuestionId) {
+          const city = answer;
+          const stateQuestion = allQuestions.find(q2 => 
+            q2.title.includes("Externship State or Territory") ||
+            q2.questionId === getSettingsQuery.data.locationQuestionId
+          );
+          const state = stateQuestion?.response || "";
+          return { ...acc, location: `${city}, ${state}`.trim() };
+        }
+        else if (q.title.toLowerCase().includes("duration of externship") || 
+                 q.questionId === getSettingsQuery.data.durationQuestionId) {
+          return { ...acc, duration: answer };
+        }
+        else if (q.title.toLowerCase().includes("compensation") || 
+                 q.questionId === getSettingsQuery.data.compensationQuestionId) {
+          return { ...acc, compensation: answer };
+        }
+    
+        return acc;
+      },
+      { siteName: "", location: "", duration: "", compensation: "" }
+    );
 
       const reviewPayload: ReviewModel = {
         ...getSettingsQuery.data,
