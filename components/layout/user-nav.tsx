@@ -1,3 +1,9 @@
+// USER NAV COMPONENT
+// This component manages the user navigation dropdown in the site header.
+// It conditionally renders options like Settings, Admin Dashboard (for admin users),
+// Logout, and Delete Account. If the user is not authenticated, it shows Sign In and Sign Up buttons.
+// Deleting an account removes it from Firebase and updates the settings admin list if applicable.
+
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -26,24 +32,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { authErrors } from "@/constants/errors";
 import { settingService, userService } from "@/service";
 import { useAuthStore } from "@/store/auth-store";
 
 export function UserNav() {
-  const { isAuthenticated, signOut, user } = useAuthStore();
-  const [isAlertOpen, setIsAlertOpen] = React.useState(false);
+  const { isAuthenticated, signOut, user } = useAuthStore(); // get user and auth actions from store
+  const [isAlertOpen, setIsAlertOpen] = React.useState(false); // controls delete confirmation dialog
+
+  // Fetch app-wide settings (includes adminUsers)
   const getSettingsQuery = useQuery({
     queryKey: ["settings"],
     queryFn: settingService.getSettings,
   });
+
+  // Mutation to update settings (used for removing admin on account delete)
   const udpateSettingMutation = useMutation({
     mutationFn: settingService.updateSettings,
   });
+
+  // Mutation for deleting the current user account
   const deleteAcctMutation = useMutation({
     mutationFn: async () => {
       try {
+        // Delete user in auth + db
         await userService.deleteUser();
+
+        // Remove user from admin list in settings (if applicable)
         await udpateSettingMutation.mutateAsync({
           docId: getSettingsQuery.data?.docId || "",
           settings: {
@@ -52,12 +68,14 @@ export function UserNav() {
             ),
           },
         });
+
         return Promise.resolve();
       } catch (error) {
         return Promise.reject(error);
       }
     },
     onSuccess: () => {
+      // On success: reset state, refetch settings, show toast, log out
       setIsAlertOpen(false);
       getSettingsQuery.refetch();
       toast.success("Account deleted successfully");
@@ -69,11 +87,11 @@ export function UserNav() {
       if (error instanceof Error) {
         message = authErrors?.[error.code] || message;
       }
-
       toast.error(message);
     },
   });
 
+  // Determine if user is an admin
   const isAdmin = React.useMemo(
     () =>
       getSettingsQuery.data && user
@@ -85,6 +103,7 @@ export function UserNav() {
   return (
     <div className="flex items-center space-x-4">
       {isAuthenticated ? (
+        // If logged in, show dropdown menu with avatar
         <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -97,21 +116,24 @@ export function UserNav() {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent className="w-56" align="end" forceMount>
+              {/* User info */}
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {user.name}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user.email}
-                  </p>
+                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                 </div>
               </DropdownMenuLabel>
+
               <DropdownMenuSeparator />
+
+              {/* Settings */}
               <DropdownMenuItem asChild>
-                <Link href = "/settings">Settings</Link>
+                <Link href="/settings">Settings</Link>
               </DropdownMenuItem>
+
+              {/* Admin Dashboard */}
               {isAdmin && (
                 <DropdownMenuItem asChild>
                   <Link href="/admin">
@@ -120,12 +142,13 @@ export function UserNav() {
                   </Link>
                 </DropdownMenuItem>
               )}
+
               {isAdmin && <DropdownMenuSeparator />}
+
+              {/* Delete Account */}
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                disabled={
-                  getSettingsQuery.isLoading || deleteAcctMutation.isPending
-                }
+                disabled={getSettingsQuery.isLoading || deleteAcctMutation.isPending}
                 asChild
               >
                 <AlertDialogTrigger className="w-full">
@@ -133,6 +156,8 @@ export function UserNav() {
                   <span>Delete Account</span>
                 </AlertDialogTrigger>
               </DropdownMenuItem>
+
+              {/* Logout */}
               <DropdownMenuItem
                 onClick={signOut}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
@@ -142,6 +167,8 @@ export function UserNav() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Delete account confirmation dialog */}
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -170,6 +197,7 @@ export function UserNav() {
           </AlertDialogContent>
         </AlertDialog>
       ) : (
+        // If logged out, show sign in / sign up buttons
         <div className="flex items-center space-x-2">
           <Button variant="outline" asChild>
             <Link href="/sign-in">Sign In</Link>

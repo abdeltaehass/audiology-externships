@@ -1,4 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
+// SURVEY PAGE
+// Page to manage survey steps and questions with create, update, delete capabilities
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -6,6 +8,7 @@ import { Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+// UI components
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -35,20 +38,21 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 
+// Services and types
 import { surveyService } from "@/service";
 import { SurveyQuestion, SurveyStep } from "@/types";
 
 export default function SurveyManagementPage() {
+  // Dialog open/close state
   const [isQuestionDialogOpen, setIsQuestionDialogOpen] = useState(false);
   const [isStepDialogOpen, setIsStepDialogOpen] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState<SurveyQuestion | null>(
-    null
-  );
+
+  // Current entities in editing mode
+  const [currentQuestion, setCurrentQuestion] = useState<SurveyQuestion | null>(null);
   const [currentStep, setCurrentStep] = useState<SurveyStep | null>(null);
-  const [addStepState, setAddStepState] = useState({
-    stepId: "",
-    stepTitle: "",
-  });
+
+  // Form state for adding steps/questions
+  const [addStepState, setAddStepState] = useState({ stepId: "", stepTitle: "" });
   const [addQuestionState, setAddQuestionState] = useState({
     stepId: "",
     type: "text" as SurveyQuestion["type"],
@@ -60,9 +64,12 @@ export default function SurveyManagementPage() {
     otherText: "",
     otherPlaceholder: "",
   });
+
+  // Flags for edit mode
   const [isEditingStep, setIsEditingStep] = useState(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
 
+  // Queries to fetch data
   const getStepsQuery = useQuery({
     queryKey: ["survey-steps"],
     queryFn: surveyService.getSteps,
@@ -72,7 +79,7 @@ export default function SurveyManagementPage() {
     queryFn: surveyService.getQuestions,
   });
 
-  // question mutations
+  // Mutations for managing questions
   const addQuestionMutation = useMutation({
     mutationFn: surveyService.addQuestion,
     onSuccess: () => {
@@ -80,10 +87,9 @@ export default function SurveyManagementPage() {
       setIsQuestionDialogOpen(false);
       getQuestionsQuery.refetch();
     },
-    onError: () => {
-      toast.error("Failed to add question");
-    },
+    onError: () => toast.error("Failed to add question"),
   });
+
   const updateQuestionMutation = useMutation({
     mutationFn: surveyService.updateQuestion,
     onSuccess: () => {
@@ -91,22 +97,19 @@ export default function SurveyManagementPage() {
       setIsQuestionDialogOpen(false);
       getQuestionsQuery.refetch();
     },
-    onError: () => {
-      toast.error("Failed to update question");
-    },
+    onError: () => toast.error("Failed to update question"),
   });
+
   const deleteQuestionMutation = useMutation({
     mutationFn: surveyService.deleteQuestion,
     onSuccess: () => {
       toast.success("Question deleted successfully");
       getQuestionsQuery.refetch();
     },
-    onError: () => {
-      toast.error("Failed to delete question");
-    },
+    onError: () => toast.error("Failed to delete question"),
   });
 
-  // step mutations
+  // Mutations for managing steps
   const addStepMutation = useMutation({
     mutationFn: surveyService.addStep,
     onSuccess: () => {
@@ -114,10 +117,9 @@ export default function SurveyManagementPage() {
       setIsStepDialogOpen(false);
       getStepsQuery.refetch();
     },
-    onError: () => {
-      toast.error("Failed to add step");
-    },
+    onError: () => toast.error("Failed to add step"),
   });
+
   const updateStepMutation = useMutation({
     mutationFn: surveyService.updateStep,
     onSuccess: () => {
@@ -125,24 +127,20 @@ export default function SurveyManagementPage() {
       setIsStepDialogOpen(false);
       getStepsQuery.refetch();
     },
-    onError: () => {
-      toast.error("Failed to update step");
-    },
+    onError: () => toast.error("Failed to update step"),
   });
+
   const deleteStepMutation = useMutation({
     mutationFn: surveyService.deleteStep,
     onSuccess: () => {
       toast.success("Step deleted successfully");
       getStepsQuery.refetch();
     },
-    onError: () => {
-      toast.error("Failed to delete step");
-    },
+    onError: () => toast.error("Failed to delete step"),
   });
 
-  const addQuestion = (
-    question: Omit<SurveyQuestion, "id" | "createdAt" | "updatedAt">
-  ) => {
+  // Convenience handlers for question CRUD
+  const addQuestion = (question: Omit<SurveyQuestion, "id" | "createdAt" | "updatedAt">) => {
     addQuestionMutation.mutate(question);
   };
 
@@ -157,9 +155,8 @@ export default function SurveyManagementPage() {
     deleteQuestionMutation.mutate(id);
   };
 
-  const addStep = (
-    step: Omit<SurveyStep, "id" | "createdAt" | "updatedAt">
-  ) => {
+  // Convenience handlers for step CRUD
+  const addStep = (step: Omit<SurveyStep, "id" | "createdAt" | "updatedAt">) => {
     addStepMutation.mutate(step);
   };
 
