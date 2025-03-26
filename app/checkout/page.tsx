@@ -99,6 +99,7 @@ const CheckoutPage = () => {
           {hasSubscribed ? (
               <div className="text-center text-green-600">
                 <p>You're already subscribed!</p>
+                <p>To unsubscribe, please go to the settings page and cancel your subscription.</p>
                 <p className="mt-2">Thank you for supporting us.</p>
                 <Link href="/">
                   <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
@@ -151,28 +152,16 @@ const CheckoutPage = () => {
           </div>
 
           {/* Cancel Button */}
-          <div className="flex justify-center mt-8">
-            <Link href="/">
-              <button className="px-4 py-2 bg-gray-500 text-white rounded">
-                Cancel
-              </button>
-            </Link>
-          </div>
+          {!hasSubscribed && (
+              <div className="flex justify-center mt-8">
+                <Link href="/">
+                  <button className="px-4 py-2 bg-gray-500 text-white rounded">
+                    Cancel
+                  </button>
+                </Link>
+              </div>
+            )}
 
-          {/* Success Message and Navigation after Subscription */}
-          {hasSubscribed && (
-            <div className="mt-4 text-center text-green-600">
-              <p>Your subscription was successful! Thank you for subscribing.</p>
-              <p>To unsubscribe, please go to the settings page and cancel your subscription.</p>
-
-              {/* Button to navigate to Externships page */}
-              <Link href="/externships">
-                <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                  Go to Externships
-                </button>
-              </Link>
-            </div>
-          )}
         </div>
       </main>
     </div>

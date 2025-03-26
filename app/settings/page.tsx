@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import ProtectedRoute from "@/components/protectedRoute";
 
 export default function Settings() {
   // State to manage the visibility of the cancel confirmation dialog
@@ -100,6 +101,7 @@ export default function Settings() {
   };
 
   return (
+    <ProtectedRoute>
     <MaxWidthWrapper>
       <SiteHeader />
       <div className="max-w-4xl mx-auto p-6">
@@ -140,5 +142,6 @@ export default function Settings() {
         </Card>
       </div>
     </MaxWidthWrapper>
+    </ProtectedRoute>
   );
 }
