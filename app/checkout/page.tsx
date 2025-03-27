@@ -5,13 +5,13 @@
 // navigation to the externships page.
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
 import { doc, updateDoc, Timestamp, getDocs, collection, query, where } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase/config";
-import { useRouter } from "next/navigation";
+import { SiteHeader } from "@/components/layout/site-header"; // Navigation header
 
 // PayPal client ID from environment variables
 const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
@@ -20,23 +20,12 @@ const CheckoutPage = () => {
   const amount = "1"; // Subscription price in USD
   const user = useAuthStore((state) => state.user); // Get current user from auth store
   const [hasSubscribed, setHasSubscribed] = useState(false); // Tracks if user has successfully subscribed
-  const router = useRouter();
-
-  useEffect(() => {
-    if (user?.subscriber) {
-      setHasSubscribed(true);
-    }
-    if (user === null) {
-      router.push('/'); // Redirect to home or login if not signed in
-    }
-  }, [user, router]);
 
   // Fetch the Firestore document ID for the current user
   const getUserDocumentId = async () => {
-    const currentUser = auth.currentUser;
-    if (!currentUser || !user) {
-      return null;
-    }
+    const user = auth.currentUser;
+
+    if (!user) return null;
 
     const usersCollectionRef = collection(db, 'users');
     const q = query(usersCollectionRef, where("uid", "==", user.uid));
@@ -44,7 +33,8 @@ const CheckoutPage = () => {
     try {
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
-        return querySnapshot.docs[0].id; // Return document ID
+        const doc = querySnapshot.docs[0];
+        return doc.id; // Return document ID
       } else {
         return null;
       }
@@ -54,62 +44,59 @@ const CheckoutPage = () => {
     }
   };
 
-  // Handle what happens after a successful PayPal transaction
-  const handleSubscription = async (orderId: string) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      alert("You must be logged in to subscribe.");
-      return;
-    }
+  const [errorMessage, setErrorMessage] = useState(""); // State for login error message
 
-    try {
-      const docId = await getUserDocumentId();
-      if (!docId) return;
+const handleSubscription = async (orderId: string) => {
+  const user = auth.currentUser;
 
-      const userRef = doc(db, "users", docId);
-      // Set subscription to expire in 7 days from now
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 7);
+  if (!user) {
+    setErrorMessage("You must be logged in to subscribe. Please sign in or create an account.");
+    return;
+  }
 
-      // Update user document with subscription info
-      await updateDoc(userRef, {
-        subscriber: true,
-        subscriptionId: orderId,
-        expirationDate: Timestamp.fromDate(expirationDate),
-        updatedAt: Timestamp.fromDate(new Date()),
-      });
+  try {
+    const docId = await getUserDocumentId();
+    if (!docId) return;
 
-      // Show success message
-      setHasSubscribed(true);
-    } catch (error) {
-      alert("Error subscribing. Please try again.");
-    }
-  };
+    const userRef = doc(db, "users", docId);
+
+    // Set subscription expiration date (7 days from now)
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 7);
+
+    // Update user document with subscription info
+    await updateDoc(userRef, {
+      subscriber: true,
+      subscriptionId: orderId,
+      expirationDate: Timestamp.fromDate(expirationDate),
+      updatedAt: Timestamp.fromDate(new Date()),
+    });
+
+    setHasSubscribed(true);
+    setErrorMessage(""); // Clear any previous error message
+  } catch (error) {
+    setErrorMessage("Error subscribing. Please try again.");
+  }
+};
 
   return (
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
+      <SiteHeader />
         <div className="py-12 md:py-24 max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-center md:text-4xl">Checkout</h1>
+          {/* Page Header */}
+          <h1 className="text-3xl font-bold text-center md:text-4xl">
+            Checkout
+          </h1>
           <p className="text-lg mt-4 text-center">
             You are about to subscribe to the Audiology Membership Plan for $1/week.
           </p>
 
+          {/* PayPal Button */}
           <div className="flex justify-center mt-12">
-          {hasSubscribed ? (
-              <div className="text-center text-green-600">
-                <p>You're already subscribed!</p>
-                <p className="mt-2">Thank you for supporting us.</p>
-                <Link href="/">
-                  <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Go Back Home
-                  </button>
-                </Link>
-              </div>
-            ) : (
             <PayPalScriptProvider options={{ clientId: paypalClientId }}>
               <PayPalButtons
-                style={{ layout: "vertical", shape: "rect" }}
+                style={{ layout: "vertical", shape: "rect", height: 55 }}
                 createOrder={(data, actions) => {
                   // Create order with PayPal
                   return actions.order.create({
@@ -125,7 +112,7 @@ const CheckoutPage = () => {
                   });
                 }}
                 onApprove={async (data, actions) => {
-                  //Handle payment approval
+                  // Handle payment approval
                   if (actions.order) {
                     try {
                       const order = await actions.order.capture();
@@ -147,7 +134,6 @@ const CheckoutPage = () => {
                 }}
               />
             </PayPalScriptProvider>
-          )}
           </div>
 
           {/* Cancel Button */}
@@ -160,19 +146,29 @@ const CheckoutPage = () => {
           </div>
 
           {/* Success Message and Navigation after Subscription */}
-          {hasSubscribed && (
-            <div className="mt-4 text-center text-green-600">
-              <p>Your subscription was successful! Thank you for subscribing.</p>
-              <p>To unsubscribe, please go to the settings page and cancel your subscription.</p>
+        {hasSubscribed && (
+          <div className="mt-6 p-6 text-center bg-green-100 border border-green-400 rounded-lg shadow-md">
+            <h2 className="text-2xl font-semibold text-green-700">
+              🎉 Subscription Successful!
+            </h2>
+            <p className="mt-2 text-green-700">
+              Thank you for subscribing to the <strong>Audiology Membership Plan</strong>.  
+              Your access is now active for the next 7 days.
+            </p>
+            <p className="mt-2 text-green-700">
+              To manage or cancel your subscription, visit the <strong>Settings</strong> page.
+            </p>
 
-              {/* Button to navigate to Externships page */}
+          {/* Button to navigate to Externships page */}
+            <div className="mt-6">
               <Link href="/externships">
-                <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                  Go to Externships
+                <button className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition">
+                  Explore Externships 🚀
                 </button>
               </Link>
             </div>
-          )}
+        </div>
+        )}
         </div>
       </main>
     </div>

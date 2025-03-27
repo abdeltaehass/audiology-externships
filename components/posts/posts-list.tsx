@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -19,6 +20,9 @@ import { PostDetails } from "./post-details";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { surveyService } from "@/service";
+import externshipSurveyData from "@/constants/externshipSurveyData.json";
+import { ExternshipData } from "@/types/externship-Data";
+import { ReviewModel } from "@/types";
 
 // type Post = {
 //   id: string;
@@ -132,30 +136,105 @@ const ITEMS_PER_PAGE = 10;
 //     rating: 4.8,
 //   },
 // ];
+function isReviewModel(post: unknown): post is ReviewModel {
+  return (post as ReviewModel)?.docId !== undefined;
+}
+
+function getSiteName(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    if (post.siteName) return post.siteName;
+    
+    if (post.surveyResult && post.surveyResult.length > 0) {
+      for (const section of post.surveyResult) {
+        const siteNameQuestion = section.questions.find(
+          q => q.title.toLowerCase().includes("externship site name") ||
+               q.title === "Externship Site Name:" ||
+               q.questionId === post.siteNameQuestionId
+        );
+        if (siteNameQuestion?.response) {
+          return siteNameQuestion.response as string;
+        }
+      }
+    }
+    return "Unnamed Site";
+  }
+
+  return post["Externship Site Name"] || "Unnamed Site";
+}
+
+function getLocation(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    if (post.location) return post.location;
+    const city = post.surveyResult?.[0]?.questions?.find(
+      (q: any) => q.title === "City of Externship?"
+    )?.response as string;
+    const state = post.surveyResult?.[0]?.questions?.find(
+      (q: any) => q.title === "Externship State or Territory?"
+    )?.response as string;
+    return `${city || "Unknown City"}, ${state || "Unknown State"}`;
+  }
+  return `${post["City of Externship?"] || "Unknown City"}, ${post["Externship State or Territory?"] || "Unknown State"}`;
+}
+
+function getDuration(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    return post.duration || 
+      post.surveyResult?.[0]?.questions?.find(
+        (q: any) => q.title === "Duration of Externship?"
+      )?.response as string || "Unknown Duration";
+  }
+  return post["Duration of Externship?"] || "Unknown Duration";
+}
+
+function getCompensation(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    return post.compensation || 
+      post.surveyResult?.[0]?.questions?.find(
+        (q: any) => q.title.includes("Compensation")
+      )?.response as string || "Not specified";
+  }
+  return post["Annual Compensation:"] || "Not specified";
+}
+
+function getId(post: ReviewModel | ExternshipData): string {
+  if (isReviewModel(post)) {
+    return post.docId;
+  }
+  return `externship-${post["Externship Site Name"]}-${post["City of Externship?"]}`;
+}
+
 
 export function PostsList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const [selectedPost, setSelectedPost] = useState<string | null>(
-    searchParams.get("post")
-  );
+  const [selectedPost, setSelectedPost] = useState<string | null>(searchParams.get("post"));
   const page = Number(searchParams.get("page")) || 1;
   const searchQuery = searchParams.get("query")?.toLowerCase() || "";
-
+  const externshipData = externshipSurveyData as ExternshipData[];
+  
   const getReviewsQuery = useQuery({
     queryKey: ["reviews", { status: "accepted" }],
     queryFn: surveyService.getApprovedReviews,
   });
+  
+  const submittedSurveys = getReviewsQuery.data || []; 
+  const combinedData = [...externshipData, ...submittedSurveys];
 
-  const filteredPosts = getReviewsQuery.data?.length
-    ? getReviewsQuery.data.filter(
-        (post) =>
-          post.siteName.toLowerCase().includes(searchQuery) ||
-          post.location.toLowerCase().includes(searchQuery) ||
-          post.duration.toLowerCase().includes(searchQuery)
-      )
-    : [];
+  const filteredPosts = combinedData.filter((post) => {
+    const siteName = getSiteName(post).toLowerCase();
+    const location = getLocation(post).toLowerCase();
+    const duration = getDuration(post).toLowerCase();
+    if (!siteName || siteName.trim() === "" || siteName === "unnamed site") {
+      return false;
+    }
+
+    return (
+      siteName.includes(searchQuery) ||
+      location.includes(searchQuery) ||
+      duration.includes(searchQuery)
+    );
+  });
 
   const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
   const currentPosts = filteredPosts.slice(
@@ -214,38 +293,44 @@ export function PostsList() {
       <div className="grid gap-4">
         {currentPosts.map((post) => (
           <Card
-            key={post.docId}
+            key={getId(post)}
             className={cn(
               "cursor-pointer transition-all hover:shadow-md",
-              selectedPost === post.docId && "border-primary bg-primary/5"
+              selectedPost === getId(post) && "border-primary bg-primary/5"
             )}
-            onClick={() => handlePostSelect(post.docId)}
+            onClick={() => handlePostSelect(getId(post))}
           >
             <CardContent className="p-5">
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold tracking-tight">
-                      {post.siteName}
+                      {getSiteName(post)}
                     </h3>
                     <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5" />
-                      <span>{post.location}</span>
+                      <span>{getLocation(post)}</span>
                     </div>
                   </div>
-                  {/* <Badge variant="outline" className="bg-accent">
-                    {post.type}
-                  </Badge> */}
                 </div>
                 <div className="flex flex-wrap items-center gap-4 text-sm">
                   <div className="flex items-center gap-1.5">
                     <Calendar className="h-4 w-4 text-primary" />
-                    <span>{post.duration}</span>
+                    <span>{getDuration(post)}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <DollarSign className="h-4 w-4 text-primary" />
-                    <span>{post.compensation}</span>
+                    <span>{getCompensation(post)}</span>
                   </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+                  {/* <Badge variant="outline" className="bg-accent">
+                    {post.type}
+                  </Badge> */}
                   {/* <div className="flex items-center gap-1.5 ml-auto">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
@@ -263,18 +348,14 @@ export function PostsList() {
                         >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
-                      ))}
+                        })}
+                      </div>
                     </div>
                     <span className="text-sm font-medium">
                       {post.rating.toFixed(1)}
                     </span>
                   </div> */}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            
 
       <Pagination
         currentPage={page}
@@ -316,21 +397,77 @@ export function Pagination({
   totalPages,
   onPageChange,
 }: PaginationProps) {
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const maxVisiblePages = 7; 
+  const halfVisiblePages = Math.floor(maxVisiblePages / 2);
+
+  let startPage = Math.max(1, currentPage - halfVisiblePages);
+  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  if (endPage - startPage < maxVisiblePages - 1) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+ 
+  const visiblePages = Array.from(
+    { length: endPage - startPage + 1 },
+    (_, i) => startPage + i
+  );
 
   return (
     <div className="flex items-center gap-2">
-      {pages.map((page) => (
+      <Button
+        variant="ghost"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+         aria-label="Previous page"
+      >
+        <ChevronRight className="h-4 w-4 rotate-180" />
+        Previous
+      </Button>
+
+      {startPage > 1 && (
+        <>
+          <Button
+            size="icon"
+            className="rounded-full"
+            variant={currentPage === 1 ? "default" : "ghost"}
+            onClick={() => onPageChange(1)}
+          >
+            1
+          </Button>
+          {startPage > 2 && <span className="text-muted-foreground">...</span>}
+        </>
+      )}
+
+
+      {visiblePages.map((page) => (
         <Button
           key={page}
           size="icon"
           className="rounded-full"
           variant={currentPage === page ? "default" : "ghost"}
           onClick={() => onPageChange(page)}
+          aria-label={`Page ${page}`}
         >
           {page}
         </Button>
       ))}
+
+      {endPage < totalPages && (
+        <>
+          {endPage < totalPages - 1 && (
+            <span className="text-muted-foreground">...</span>
+          )}
+          <Button
+            size="icon"
+            className="rounded-full"
+            variant={currentPage === totalPages ? "default" : "ghost"}
+            onClick={() => onPageChange(totalPages)}
+          >
+            {totalPages}
+          </Button>
+        </>
+      )}
+
       <Button
         variant="ghost"
         onClick={() => onPageChange(currentPage + 1)}

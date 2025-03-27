@@ -42,6 +42,7 @@ import {
 // API services and types
 import { surveyService } from "@/service";
 import { ReviewModel } from "@/types";
+import { SiteHeader } from "@/components/layout/site-header"; // Navigation header
 
 export default function ExternshipReviewsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false); // controls modal visibility
@@ -55,6 +56,7 @@ export default function ExternshipReviewsPage() {
 
   return (
     <div className="space-y-6">
+       <SiteHeader />
       {/* Header and refresh button */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
