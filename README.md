@@ -100,11 +100,17 @@ Our goal is to make easier for audiology students to find relevant externships f
 
 ## Testing
 
-Testing will be performed iteratively during development. Placeholder for the following:
+Testing is performed with Vitest. All of the essential dependecies have already been installed and properly configured. What you will need to begin testing is the following:
 
-- **Unit Testing**: Focus on critical components such as survey submissions and payment workflows.
-- **Integration Testing**: Ensuring seamless interaction between modules.
-- **User Acceptance Testing (UAT)**: Validating functionalities meet user needs.
+1. Install Vitest with ```npm install -D vitest```
+
+2. To test every file under the 'Tests' folder, run the following command: 
+    ```npm test```
+
+    To test specific files, run the following command:
+    ```npm test filename.test.tsx```
+
+From here the tests to be performed should take approximately 5 - 10 seconds to complete.
 
 ---
 
@@ -116,22 +122,9 @@ Testing will be performed iteratively during development. Placeholder for the fo
 
 ---
 
-## Timeline & Milestones
-
-Using **JIRA** for task tracking, here are the key milestones for our project:
-
-| Date        | Milestone                        | Status         |
-| ----------- | -------------------------------- | -------------- |
-| **09/2024** | Initial Project Charter Approval | ✅ Completed   |
-| **10/2024** | Functional Requirements Document | ✅ Completed   |
-| **11/2024** | Basic Survey Submission Feature  | ✅ Completed   |
-| **01/2025** | Payment System Implementation    | ✅ Completed   |
-| **03/2025** | Admin Portal with Full Features  | ✅ Completed   |
-| **05/2025** | Final Product Delivery           | 🔄 In Progress |
-
----
-
 ## Learn More
 
 - [Learn more about React](https://react.dev/)
+- [Learn more about Typescript](https://www.typescriptlang.org/)
 - [Learn more about Firebase](https://firebase.google.com/docs)
+- [Learn more about Vitest](https://vitest.dev/guide/)
