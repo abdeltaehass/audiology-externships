@@ -103,7 +103,7 @@ export default function Page() {
                   </p>
 
                   {/* Button linking to externship listings */}
-                  <Link href="/externships">
+                  <Link href="/posts">
                     <Button className="group">
                       Explore Externships
                       <ArrowRight className="group-hover:translate-x-1 transition-transform size-5" />

@@ -161,7 +161,7 @@ const handleSubscription = async (orderId: string) => {
 
           {/* Button to navigate to Externships page */}
             <div className="mt-6">
-              <Link href="/externships">
+              <Link href="/posts">
                 <button className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition">
                   Explore Externships 🚀
                 </button>
