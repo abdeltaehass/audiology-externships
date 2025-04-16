@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs, updateDoc, Timestamp, doc, } from "firebase/firestore";
 
 const db = getFirestore();
 
@@ -25,21 +25,41 @@ export function useAuth() {
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
-          const userData = querySnapshot.docs[0].data();
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
           console.log("Firestore data:", userData);
 
           // Check and parse subscriber status
           const subscriberStatus = !!userData.subscriber;
-          console.log("Subscriber status:", subscriberStatus);
+          const subscriptionEnd = userData.expirationDate; // Should be a Firestore Timestamp
 
-          // Update subscription state based solely on 'subscriber'
-          if (subscriberStatus) {
+          let isStillSubscribed = subscriberStatus;
+
+          // If subscribed, check expiration
+          if (subscriberStatus && subscriptionEnd) {
+            const active = subscriptionEnd.toMillis() > Date.now();
+            console.log(`⏳ Subscription still active? ${active}`);
+
+            if (!active) {
+              const userRef = doc(db, "users", userDoc.id);
+            
+              await updateDoc(userRef, {
+                subscriber: false,
+                expirationDate: Timestamp.fromDate(subscriptionEnd),
+                updatedAt: Timestamp.fromDate(new Date()),
+              });
+              isStillSubscribed = false;
+              console.log("⏱️ Subscription expired. Updated in Firestore with new expiration date.");
+            }
+          }
+
+          if (isStillSubscribed) {
             console.log("✅ User is subscribed.");
-            setIsSubscribed(true);
           } else {
             console.log("❌ User is not subscribed.");
-            setIsSubscribed(false);
           }
+
+          setIsSubscribed(isStillSubscribed);
         } else {
           console.log("⚠️ User document not found.");
           setIsSubscribed(false);
@@ -53,6 +73,7 @@ export function useAuth() {
       setIsSubscribed(false);
     }
   };
+
 
   useEffect(() => {
     const auth = getAuth();

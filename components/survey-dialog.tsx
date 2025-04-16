@@ -35,30 +35,6 @@ import {
   SurveyResult,
 } from "@/types";
 
-// const evaluateCondition = (condition: string, formData: any) => {
-//   if (!condition) return true;
-//   const regex = /{([^}]+)}/g;
-//   const evaluatedCondition = condition.replace(
-//     regex,
-//     (_, key) => formData[key] || "''"
-//   );
-//   try {
-//     return eval(evaluatedCondition);
-//   } catch (error) {
-//     console.error("Error evaluating condition:", error);
-//     return false;
-//   }
-// };
-
-// const isValidInput = (input: string) => {
-//   const disallowedPattern = /[<>;&]/;
-//   return !disallowedPattern.test(input);
-// };
-
-// const isValidYear = (yearString: string) => {
-//   const year = parseInt(yearString, 10);
-//   return !isNaN(year) && year >= 1990 && year <= new Date().getFullYear();
-// };
 
 export function SurveyDialog(props: { buttonClassName?: string }) {
   const { user } = useAuthStore();
@@ -543,3 +519,4 @@ export function SurveyDialog(props: { buttonClassName?: string }) {
     </Dialog>
   );
 }
+export default SurveyDialog;

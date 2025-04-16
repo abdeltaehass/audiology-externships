@@ -22,10 +22,8 @@ import Link from "next/link";
 const features = [
   "Unlimited externship reviews access",
   "Comprehensive user feedback",
-  "Real-time updates and notifications",
   "Flexible subscription management",
   "Community insights and tips",
-  "Direct communication with reviewers",
 ];
 
 export default function PricingPage() {
@@ -77,7 +75,7 @@ export default function PricingPage() {
                     Enjoy the freedom to access an unlimited number of reviews,
                     receiving continuous and comprehensive feedback from users
                     to stay informed. Plus, take control of your subscription
-                    with the flexibility to pause or cancel anytime.
+                    with the flexibility to cancel anytime.
                   </div>
 
                   {/* Feature list with check icons */}
@@ -93,7 +91,7 @@ export default function PricingPage() {
 
                 {/* Subscribe button */}
                 <CardFooter>
-                  <Button className="w-full">
+                  <Button className="w-full" asChild>
                     <Link href="/checkout">
                       Subscribe Now
                     </Link>
