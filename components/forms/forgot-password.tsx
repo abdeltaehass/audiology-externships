@@ -35,7 +35,7 @@ export function ForgotPasswordForm({
     try {
       // Attempt to send password reset email using Firebase Auth
       await sendPasswordResetEmail(auth, email, {
-        url: "http://localhost:3000/change-password", // Redirect URL (adjust for production)
+        url: "http://localhost:3000/sign-in", // Redirect URL (adjust for production)
         handleCodeInApp: false,
       });
 
@@ -83,6 +83,7 @@ export function ForgotPasswordForm({
               <Link href="/sign-in">
                 <Button className="w-full">Return to Sign In</Button>
               </Link>
+              
             </div>
           ) : (
             // Reset password form
