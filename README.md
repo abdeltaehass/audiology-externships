@@ -1,14 +1,13 @@
 ## Table of Contents
 
-- [Enhance Audiology Externship Website](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#enhance-audiology-externship-website)
-- [Team Members](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#team-members)
-- [Synopsis](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#synopsis)
-- [Features](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#features)
-- [Deployment](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#deployment)
-- [Testing](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#testing)
-- [Tech Stack](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#tech-stack)
-- [Timeline & Milestones](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#timeline--milestones)
-- [Learn More](https://github.com/legnajaneth/8Bits-1Byte-Senior-Project?tab=readme-ov-file#learn-more)
+- [Enhance Audiology Externship Website](https://github.com/abdeltaehass/audiology-externships?tab=readme-ov-file#enhance-audiology-externship-website)
+- [Team Members](https://github.com/abdeltaehass/audiology-externships?tab=readme-ov-file#team-members)
+- [Synopsis](https://github.com/abdeltaehass/audiology-externships?tab=readme-ov-file#synopsis)
+- [Features](https://github.com/abdeltaehass/audiology-externships?tab=readme-ov-file#features)
+- [Deployment](https://github.com/abdeltaehass/audiology-externships?tab=readme-ov-file#deployment)
+- [Testing](https://github.com/abdeltaehass/audiology-externships?tab=readme-ov-file#testing)
+- [Tech Stack](https://github.com/abdeltaehass/audiology-externships?tab=readme-ov-file#tech-stack)
+- [Learn More](https://github.com/abdeltaehass/audiology-externships?tab=readme-ov-file#learn-more)
 
 ---
 
@@ -59,42 +58,32 @@ Our goal is to make easier for audiology students to find relevant externships f
 
 ## Deployment
 
-**Note: To be rewritten**
+- On the top of this page, locate the green "Code" button and clone the repository with the following command in the VSCode terminal:
 
-**Prerequisites**
+    ```git clone https://github.com/abdeltaehass/audiology-externships```
 
-- Ensure both **Node.js** and npm are installed on your machine
-- Ensure **Git** is installed on your machine
-- Install your preferred IDE (VSCode, Eclipse, etc.). _VSCode recommended for Installation steps_.
-- Clone project repository from Github
+- Afterwards, type into the terminal ```cd audiology-externships```
 
-**Getting Started: Will rewrite soon**
+  Within the terminal make sure to type the following commands and install to properly run the site:
 
-- Navigate to the main project repository on Github and retrieve the project HTTPS URL. This can be done by locating and clicking the green button labeled "Code". Copy the HTTPS URL to your clipboard.
-- Once having installed VSCode or your preferred IDE, open the application and open a Gitbash terminal.
-- On your IDE's CLI, there will be two commands that must be typed to have a successful run. Begin by typing `git clone` into the terminal, followed by pasting HTTPS URL linked copied to your clipboard - `git clone [HTTPS URL Link]`. After pasting the link, proceed by pressing the 'Enter' key.
-- You will see the following output in the terminal, indicating that the repository has been successfully cloned.
-- **Placeholder for screenshot**
-- Continue by opening a new folder in VSCode / preferred IDE, and navigate to the "8Bits-1Byte-Senior-Project" folder created inside of the directory the previous `git clone` command was run in.
-- In VSCode / your preferred IDE, open a new Gitbash command line in order to run a new command to install the necessary scripts needed to run the application. The command is `npm install react-scripts`, and may take approximately a few minutes to fully process.
-- Additionally, be sure to provide the following command into the terminal to install an additional dependency - `npm install axios`
-- There are two files provided with the delivery of this project, a folder titled "firebase" and a file name "clientID.json". Both of these files must be placed in the "/src" folder of the project.
-- Proceed to run the following command in order to create a production build of the React app - `npm run build`
-- Upon a successful compilation of the project files, the command line will provide output indicating the 'build' folder is ready to be deployed.
-- In order to host the React app on Firebase, provide the following command into the CLI which will bring up a prompt for logging into Firebase - `firebase login`
-- Once logged into Firebase, provide this command to commence initializing the project - `firebase init`
-- For the first prompt, enter "Y" into the terminal to continue with the initialization process.
-- Using the spacebar, select "Realtime Database" and "Hosting" out of the list of features.
-- You will be provided more options for the next prompt, select "Use an existing project"
-- It is advised to use the recommended directory for the Firebase project. In order to use it, press the "Enter" key at the next prompt.
-- Press the "Enter" key again to use the recommended file for the database security system rules.
-- On the next prompt, type the keyword `build` into the terminal to set the folder created by the production build of the React app as the public directory.
-- To configure the project as a single page app, proceed by entering "y" into the terminal.
-- It is advised to **NOT** set up automatic builds and deployments with Github for this project. To proceed with this setting, enter "N" into the terminal.
-- Type "n" into the terminal once more in order to prevent the initializer from overwriting the "index.html" in the "build" folder.
-- Upon answering all of the previous prompts, the CLI will display that the project has been successfully initialized.
-- **Placeholder for screenshot**
-- To deploy the project, provide the following command - `firebase deploy`
+    ```npm install```
+
+    ```npx next -v I got Next.js v14.2.24```
+
+    ```npm install zustand@4```
+
+- Afterwards, use the command celow to create a production build of the app:
+
+    ```npm run build```
+
+
+- To run the site, use the command below, the messages in the terminal indicate the progression of loading up the website locally:
+
+    ```npm run dev```
+
+- For deployment on the left side where NPM Scripts is, click on **deploy** to successfully deploy the site.
+
+
 
 ---
 
